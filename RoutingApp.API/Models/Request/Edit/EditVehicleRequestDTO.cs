@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RoutingApp.API.Models.Request
 {
-    public class EditVehicleRequest
+    public class EditVehicleRequestDTO
     {
         public int Id { get; set; }
         public required string Name { get; set; }

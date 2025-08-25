@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RoutingApp.API.Models.Request
 {
-    public class CreateVehicleRequest
+    public class CreateVehicleRequestDTO
     {
         public required string Name { get; set; }
         public decimal Capacity { get; set; }

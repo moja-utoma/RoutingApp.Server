@@ -3,7 +3,7 @@ using RoutingApp.API.Models.DTO;
 
 namespace RoutingApp.API.Validation
 {
-	public class RouteValidator : AbstractValidator<CreateRouteRequest>
+	public class RouteValidator : AbstractValidator<CreateRouteRequestDTO>
 	{
 		public RouteValidator()
 		{

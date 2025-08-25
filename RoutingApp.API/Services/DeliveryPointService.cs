@@ -20,13 +20,13 @@ namespace RoutingApp.API.Services
 			_repository = repository;
 		}
 
-		public async Task<IEnumerable<DeliveryPointResponse>> GetAllPointsAsync(FromQueryParametersModel filters)
+		public async Task<IEnumerable<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
 		{
 			var result = await _repository.GetAllWithParamsAsync(filters);
 			return EntityToModel.CreateModelsFromDeliveryPoints(result);
 		}
 
-		public async Task<DeliveryPointResponse?> GetPointByIDAsync(int id)
+		public async Task<DeliveryPointResponseDTO?> GetPointByIDAsync(int id)
 		{
 			var result = await _repository.GetByIdAsync(id);
 			if (result == null)
@@ -37,7 +37,7 @@ namespace RoutingApp.API.Services
 			return EntityToModel.CreateModelFromDeliveryPoint(result);
 		}
 
-		public async Task<DeliveryPointResponse> CreatePointAsync(CreateDeliveryPointRequest point)
+		public async Task<DeliveryPointResponseDTO> CreatePointAsync(CreateDeliveryPointRequestDTO point)
 		{
 			if (point.Weight < 0.1m)
 			{
@@ -70,7 +70,7 @@ namespace RoutingApp.API.Services
 			await _repository.SaveChangesAsync();
 		}
 
-		public async Task<DeliveryPointResponse> EditAsync(EditDeliveryPointRequest request)
+		public async Task<DeliveryPointResponseDTO> EditAsync(EditDeliveryPointRequestDTO request)
 		{
 			var entity = await _repository.GetByIdAsync(request.Id);
 			if (entity == null)

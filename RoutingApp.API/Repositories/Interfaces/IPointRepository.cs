@@ -7,6 +7,6 @@ namespace RoutingApp.API.Repositories.Interfaces
 {
     public interface IPointRepository<T> : IRepository<T> where T : Point
     {
-        Task<IEnumerable<T>> GetAllWithParamsAsync(FromQueryParametersModel filters);
+        Task<IEnumerable<T>> GetAllWithParamsAsync(QueryParametersModel filters);
     }
 }

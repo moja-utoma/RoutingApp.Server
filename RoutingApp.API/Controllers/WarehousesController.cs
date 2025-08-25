@@ -22,7 +22,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Get([FromQuery] FromQueryParametersModel filters)
+		public async Task<IActionResult> Get([FromQuery] QueryParametersModel filters)
 		{
 			var result = await _pointService.GetAllPointsAsync(filters);
 			return Ok(result);
@@ -36,7 +36,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(CreateWarehouseRequest dto)
+		public async Task<IActionResult> Create(CreateWarehouseRequestDTO dto)
 		{
 			try
 			{
@@ -64,7 +64,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPut]
-		public async Task<IActionResult> Edit(EditWarehouseRequest request)
+		public async Task<IActionResult> Edit(EditWarehouseRequestDTO request)
 		{
 			try
 			{

@@ -22,7 +22,7 @@ namespace RoutingApp.API.Services
 			_warehouseRepository = warehouseRepository;
 		}
 
-		public async Task<RouteResponse> CreateRouteAsync(CreateRouteRequest request)
+		public async Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request)
 		{
 			var warehouses = await _warehouseRepository.GetMultipleByIdAsync(request.WarehouseIds);
 			if (!warehouses.Any())
@@ -45,13 +45,13 @@ namespace RoutingApp.API.Services
 			return dto;
 		}
 
-		public async Task<IEnumerable<RouteResponse>> GetAllRoutesAsync()
+		public async Task<IEnumerable<RouteResponseDTO>> GetAllRoutesAsync()
 		{
 			var result = await _routeRepository.GetAllAsync();
 			return EntityToModel.CreateModelsFromRoutes(result);
 		}
 
-		public async Task<RouteResponse?> GetRouteByIDAsync(int id)
+		public async Task<RouteResponseDTO?> GetRouteByIDAsync(int id)
 		{
 			var result = await _routeRepository.GetByIdAsync(id);
 			if (result == null)
@@ -85,7 +85,7 @@ namespace RoutingApp.API.Services
 			await _routeRepository.SaveChangesAsync();
 		}
 
-		public async Task<RouteResponse> EditAsync(EditRouteRequest request)
+		public async Task<RouteResponseDTO> EditAsync(EditRouteRequestDTO request)
 		{
 			var entity = await _routeRepository.GetByIdAsync(request.Id);
 			if (entity == null)

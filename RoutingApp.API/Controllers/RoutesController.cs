@@ -46,7 +46,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(CreateRouteRequest dto)
+		public async Task<IActionResult> Create(CreateRouteRequestDTO dto)
 		{
 			try
 			{
@@ -79,7 +79,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPut]
-		public async Task<IActionResult> Edit(EditRouteRequest request)
+		public async Task<IActionResult> Edit(EditRouteRequestDTO request)
 		{
 			try
 			{

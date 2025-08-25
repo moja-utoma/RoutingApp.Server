@@ -7,10 +7,10 @@ namespace RoutingApp.API.Services.Interfaces
 {
 	public interface IWarehouseService : IDeletable
 	{
-		Task<IEnumerable<WarehouseResponse>> GetAllPointsAsync(FromQueryParametersModel filters);
-		Task<WarehouseResponse?> GetPointByIDAsync(int id);
+		Task<IEnumerable<WarehouseResponseDTO>> GetAllPointsAsync(QueryParametersModel filters);
+		Task<WarehouseResponseDTO?> GetPointByIDAsync(int id);
 		Task<List<string>> ImportCSV(IFormFile file);
-		Task<WarehouseResponse> CreatePointAsync(CreateWarehouseRequest point);
-		Task<WarehouseResponse> EditAsync(EditWarehouseRequest request);
+		Task<WarehouseResponseDTO> CreatePointAsync(CreateWarehouseRequestDTO point);
+		Task<WarehouseResponseDTO> EditAsync(EditWarehouseRequestDTO request);
 	}
 }

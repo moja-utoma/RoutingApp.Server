@@ -1,6 +1,6 @@
 ﻿namespace RoutingApp.API.Models.DTO
 {
-	public class EditPointRequest
+	public class EditPointRequestDTO
 	{
 		public int Id { get; set; }
 		public required string Name { get; set; }

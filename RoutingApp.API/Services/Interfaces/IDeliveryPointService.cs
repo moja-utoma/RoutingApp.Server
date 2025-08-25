@@ -7,10 +7,10 @@ namespace RoutingApp.API.Services.Interfaces
 {
 	public interface IDeliveryPointService : IDeletable
 	{
-		Task<IEnumerable<DeliveryPointResponse>> GetAllPointsAsync(FromQueryParametersModel filters);
-		Task<DeliveryPointResponse?> GetPointByIDAsync(int id);
+		Task<IEnumerable<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters);
+		Task<DeliveryPointResponseDTO?> GetPointByIDAsync(int id);
 		Task<List<string>> ImportCSV(IFormFile file);
-		Task<DeliveryPointResponse> CreatePointAsync(CreateDeliveryPointRequest point);
-		Task<DeliveryPointResponse> EditAsync(EditDeliveryPointRequest request);
+		Task<DeliveryPointResponseDTO> CreatePointAsync(CreateDeliveryPointRequestDTO point);
+		Task<DeliveryPointResponseDTO> EditAsync(EditDeliveryPointRequestDTO request);
 	}
 }

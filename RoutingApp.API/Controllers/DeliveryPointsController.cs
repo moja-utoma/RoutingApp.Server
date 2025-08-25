@@ -22,7 +22,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> GetAll([FromQuery] FromQueryParametersModel filters)
+		public async Task<IActionResult> GetAll([FromQuery] QueryParametersModel filters)
 		{
 			var result = await _pointService.GetAllPointsAsync(filters);
 			return Ok(result);
@@ -36,7 +36,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(CreateDeliveryPointRequest dto)
+		public async Task<IActionResult> Create(CreateDeliveryPointRequestDTO dto)
 		{
 			try
 			{
@@ -78,7 +78,7 @@ namespace RoutingApp.API.Controllers
 		}
 
 		[HttpPut]
-		public async Task<IActionResult> Edit(EditDeliveryPointRequest request)
+		public async Task<IActionResult> Edit(EditDeliveryPointRequestDTO request)
 		{
 			try
 			{

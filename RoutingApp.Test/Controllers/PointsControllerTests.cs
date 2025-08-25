@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RoutingApp.API.Controllers;
 using RoutingApp.API.Enumerations;
+using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services.Interfaces;
 
@@ -11,34 +12,35 @@ namespace RoutingApp.Test;
 
 public class PointsControllerTests
 {
-    private readonly Mock<IPointService> _pointServiceMock;
-    private readonly PointsController _controller;
+    private readonly Mock<IDeliveryPointService> _serviceMock;
+    private readonly DeliveryPointsController _controller;
     public PointsControllerTests()
     {
-        _pointServiceMock = new Mock<IPointService>();
-        _controller = new PointsController(_pointServiceMock.Object);
+        _serviceMock = new Mock<IDeliveryPointService>();
+        _controller = new DeliveryPointsController(_serviceMock.Object);
     }
 
     [Fact]
     public async Task Get_ShouldReturnPointsAsync()
     {
         // Arrange
-        var points = new List<PointResponse>
+        var points = new List<DeliveryPointResponseDTO>
             {
-                new PointResponse { Id = 1, Name = "Point A", Address = "Addr 1", Latitude = 10, Longitude = 20, Type = PointType.DeliveryPoint, Weight = 12.5m },
-                new PointResponse { Id = 2, Name = "Point B", Address = "Addr 2", Latitude = 30, Longitude = 40, Type = PointType.Warehouse, Weight = null }
+                new DeliveryPointResponseDTO { Id = 1, Name = "Point A", Address = "Addr 1", Latitude = 10, Longitude = 20, Weight = 12.5m },
+                new DeliveryPointResponseDTO { Id = 2, Name = "Point B", Address = "Addr 2", Latitude = 30, Longitude = 40, Weight = 5m }
             };
 
-        _pointServiceMock
-            .Setup(service => service.GetAllPointsAsync(SortOrder.AlphabetAscending, "", 1, 10, null))
+        var queryParams = new QueryParametersModel();
+
+        _serviceMock.Setup(service => service.GetAllPointsAsync(queryParams))
             .ReturnsAsync(points);
 
         // Act
-        var result = await _controller.Get();
+        var result = await _controller.GetAll(queryParams);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsAssignableFrom<IEnumerable<PointResponse>>(okResult.Value);
+        var returnValue = Assert.IsAssignableFrom<IEnumerable<PointResponseDTO>>(okResult.Value);
         Assert.Equal(2, returnValue.Count());
         Assert.Equal("Point A", returnValue.First().Name);
     }
@@ -47,8 +49,8 @@ public class PointsControllerTests
     public async Task GetByID_ShouldReturnPoint()
     {
         // Arrange
-        var point = new PointResponse { Id = 1, Name = "Test", Address = "Addr", Longitude = 10, Latitude = 20, Type = PointType.Warehouse };
-        _pointServiceMock
+        var point = new DeliveryPointResponseDTO { Id = 1, Name = "Test", Address = "Addr", Longitude = 10, Latitude = 20, Weight=20m };
+        _serviceMock
             .Setup(s => s.GetPointByIDAsync(1))
             .ReturnsAsync(point);
 
@@ -57,7 +59,7 @@ public class PointsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<PointResponse>(okResult.Value);
+        var returnValue = Assert.IsType<PointResponseDTO>(okResult.Value);
         Assert.Equal(1, returnValue.Id);
     }
 
@@ -72,12 +74,12 @@ public class PointsControllerTests
             name: "file",
             fileName: "test.csv"
         );
-        _pointServiceMock
+        _serviceMock
             .Setup(s => s.ImportCSV(It.IsAny<IFormFile>()))
             .ThrowsAsync(new Exception("File is empty"));
 
         // Act
-        var result = await _controller.CreateFromCSV(file);
+        var result = await _controller.ImportCSV(file);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

@@ -1,8 +1,7 @@
 ﻿namespace RoutingApp.API.Models.DTO
 {
-	public class EditRouteRequest
+	public class CreateRouteRequestDTO
 	{
-		public int Id { get; set; }
 		public required string Name { get; set; }
 
 		public required IEnumerable<int> WarehouseIds { get; set; }

@@ -22,13 +22,13 @@ namespace RoutingApp.API.Services
 			_vehicleRepository = vehicleRepository;
 		}
 
-		public async Task<IEnumerable<WarehouseResponse>> GetAllPointsAsync(FromQueryParametersModel filters)
+		public async Task<IEnumerable<WarehouseResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
 		{
 			var result = await _repository.GetAllWithParamsAsync(filters);
 			return EntityToModel.CreateModelsFromWarehouses(result);
 		}
 
-		public async Task<WarehouseResponse?> GetPointByIDAsync(int id)
+		public async Task<WarehouseResponseDTO?> GetPointByIDAsync(int id)
 		{
 			var result = await _repository.GetByIdAsync(id);
 			if (result == null)
@@ -39,7 +39,7 @@ namespace RoutingApp.API.Services
 			return EntityToModel.CreateModelFromWarehouse(result);
 		}
 
-		public async Task<WarehouseResponse> CreatePointAsync(CreateWarehouseRequest point)
+		public async Task<WarehouseResponseDTO> CreatePointAsync(CreateWarehouseRequestDTO point)
 		{
 			var entity = ModelToEntity.CreateEntityFromWarehouse(point);
 
@@ -66,7 +66,7 @@ namespace RoutingApp.API.Services
             _repository.Delete(entity);
 			await _repository.SaveChangesAsync();
 		}
-		public async Task<WarehouseResponse> EditAsync(EditWarehouseRequest request)
+		public async Task<WarehouseResponseDTO> EditAsync(EditWarehouseRequestDTO request)
 		{
 			var entity = await _repository.GetByIdAsync(request.Id);
 			if (entity == null)

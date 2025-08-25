@@ -56,7 +56,7 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
 
 //Validation
-builder.Services.AddScoped<IValidator<CreateRouteRequest>, RouteValidator>();
+builder.Services.AddScoped<IValidator<CreateRouteRequestDTO>, RouteValidator>();
 
 builder.Services.AddCors(options =>
 {

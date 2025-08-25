@@ -2,7 +2,7 @@
 
 namespace RoutingApp.API.Models.DTO
 {
-	public class WarehouseResponse : PointResponse
+	public class WarehouseResponseDTO : PointResponseDTO
 	{
 		public int VehicleQuantity { get; set; }
 	}

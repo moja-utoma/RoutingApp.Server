@@ -33,7 +33,7 @@ namespace RoutingApp.API.Controllers
         }
         
         [HttpPost]
-		public async Task<IActionResult> Create(CreateVehicleRequest dto)
+		public async Task<IActionResult> Create(CreateVehicleRequestDTO dto)
 		{
 			try
 			{
@@ -61,7 +61,7 @@ namespace RoutingApp.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Edit(EditVehicleRequest request)
+        public async Task<IActionResult> Edit(EditVehicleRequestDTO request)
         {
             try
             {

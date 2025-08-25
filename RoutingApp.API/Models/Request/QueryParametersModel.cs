@@ -2,7 +2,7 @@ using RoutingApp.API.Enumerations;
 
 namespace RoutingApp.API.Models;
 
-public class FromQueryParametersModel
+public class QueryParametersModel
 {
 	public string OrderBy { get; set; } = "Name";
 	public bool IsDesc { get; set; } = false;

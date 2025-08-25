@@ -1,6 +1,6 @@
 ﻿namespace RoutingApp.API.Models.DTO
 {
-	public class CreateDeliveryPointRequest : CreatePointRequest
+	public class CreateDeliveryPointRequestDTO : CreatePointRequestDTO
 	{
 		public decimal Weight { get; set; }
 	}

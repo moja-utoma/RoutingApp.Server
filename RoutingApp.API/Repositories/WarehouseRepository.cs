@@ -19,7 +19,7 @@ namespace RoutingApp.API.Repositories
             //_dbSet = context.Set<Point>();
         }
 
-        public async Task<IEnumerable<Warehouse>> GetAllWithParamsAsync(FromQueryParametersModel filters)
+        public async Task<IEnumerable<Warehouse>> GetAllWithParamsAsync(QueryParametersModel filters)
         {
             IQueryable<Warehouse> query = _context.Set<Warehouse>();
             if (!string.IsNullOrWhiteSpace(filters.SearchString))

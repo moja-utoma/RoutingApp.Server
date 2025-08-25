@@ -1,6 +1,6 @@
 ﻿namespace RoutingApp.API.Models.DTO
 {
-	public class CreateWarehouseRequest : CreatePointRequest
+	public class EditWarehouseRequestDTO : EditPointRequestDTO
 	{
 		public IEnumerable<int>? VehicleIds { get; set; }
 	}

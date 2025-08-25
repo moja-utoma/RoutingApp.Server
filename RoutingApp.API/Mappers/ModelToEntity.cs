@@ -9,7 +9,7 @@ namespace RoutingApp.API.Mappers
 {
 	public class ModelToEntity
 	{
-		public static DeliveryPoint CreateEntityFromDeliveryPoint(CreateDeliveryPointRequest point)
+		public static DeliveryPoint CreateEntityFromDeliveryPoint(CreateDeliveryPointRequestDTO point)
 		{
 			DeliveryPoint entity = new DeliveryPoint
 			{
@@ -23,7 +23,7 @@ namespace RoutingApp.API.Mappers
 			return entity;
 		}
 
-		public static Warehouse CreateEntityFromWarehouse(CreatePointRequest point)
+		public static Warehouse CreateEntityFromWarehouse(CreatePointRequestDTO point)
 		{
 			Warehouse entity = new Warehouse
 			{
@@ -36,7 +36,7 @@ namespace RoutingApp.API.Mappers
 			return entity;
 		}
 
-		public static Route CreateEntityFromRoute(CreateRouteRequest route, IEnumerable<DeliveryPoint> deliveryPoints, IEnumerable<Warehouse> warehouses)
+		public static Route CreateEntityFromRoute(CreateRouteRequestDTO route, IEnumerable<DeliveryPoint> deliveryPoints, IEnumerable<Warehouse> warehouses)
 		{
 			Route entity = new Route
 			{
@@ -47,7 +47,7 @@ namespace RoutingApp.API.Mappers
 			return entity;
 		}
 
-		public static Vehicle CreateEntityFromVehicle(CreateVehicleRequest vehicle, Warehouse? warehouse = null)
+		public static Vehicle CreateEntityFromVehicle(CreateVehicleRequestDTO vehicle, Warehouse? warehouse = null)
 		{
 			Vehicle entity = new Vehicle
 			{

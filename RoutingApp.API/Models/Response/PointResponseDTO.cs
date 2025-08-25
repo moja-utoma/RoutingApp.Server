@@ -2,7 +2,7 @@
 
 namespace RoutingApp.API.Models.DTO
 {
-	public class PointResponse
+	public class PointResponseDTO
 	{
 		public int Id { get; set; }
 		public required string Name { get; set; }
