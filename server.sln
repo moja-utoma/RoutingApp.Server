@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.API", "RoutingApp.API\RoutingApp.API.csproj", "{0E7FEA40-7B97-8E60-49CC-16C243A8748C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.Test", "RoutingApp.Test\RoutingApp.Test.csproj", "{305489AD-A8EA-3E27-F3F3-7F476C143CE8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0E7FEA40-7B97-8E60-49CC-16C243A8748C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E7FEA40-7B97-8E60-49CC-16C243A8748C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E7FEA40-7B97-8E60-49CC-16C243A8748C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E7FEA40-7B97-8E60-49CC-16C243A8748C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{305489AD-A8EA-3E27-F3F3-7F476C143CE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{305489AD-A8EA-3E27-F3F3-7F476C143CE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{305489AD-A8EA-3E27-F3F3-7F476C143CE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{305489AD-A8EA-3E27-F3F3-7F476C143CE8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7AC1D7A6-11F1-4B32-A216-E688A8C0403D}
+	EndGlobalSection
+EndGlobal

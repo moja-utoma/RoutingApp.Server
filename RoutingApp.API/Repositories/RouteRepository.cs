@@ -1,0 +1,43 @@
+﻿using Microsoft.EntityFrameworkCore;
+using RoutingApp.API.Data;
+using RoutingApp.API.Data.Entities;
+using RoutingApp.API.Repositories.Interfaces;
+using Route = RoutingApp.API.Data.Entities.Route;
+
+namespace RoutingApp.API.Repositories
+{
+	public class RouteRepository : Repository<Route>, IRouteRepository
+	{
+		private readonly AppDbContext _context;
+		//private readonly DbSet<Route> _dbSet;
+
+		public RouteRepository(AppDbContext context) : base(context)
+		{
+			_context = context;
+			//_dbSet = context.Set<Route>();
+		}
+
+		public async Task<IEnumerable<Route>> GetAllWithPointsAsync()
+		{
+			return await _context.Set<Route>()
+			.Include(r => r.Warehouses)
+			.Include(r => r.DeliveryPoints)
+			.ToListAsync();
+		}
+
+		public async Task<Route?> GetByIdWithPointsAsync(int id)
+		{
+			return await _context.Set<Route>()
+			.Include(r => r.Warehouses)
+			.Include(r => r.DeliveryPoints)
+			.FirstOrDefaultAsync(r => r.Id == id);
+		}
+
+		// public async Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids)
+		// {
+		// 	return await _dbSet.Include(r => r.Points)
+		// 		.Where(r => ids.Contains(r.Id))
+		// 		.ToListAsync();
+		// }
+	}
+}

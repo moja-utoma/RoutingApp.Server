@@ -1,0 +1,4 @@
+Name,Address,Longitude,Latitude,Type,Weight
+Point 1,"101 Sample St, City",30.88105,50.415235,0,
+Point 2,"102 Sample St, City",30.260624,50.9447,1,
+Point 3,"103 Sample St, City",30.413741,50.183771,0,

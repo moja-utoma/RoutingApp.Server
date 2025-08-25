@@ -1,0 +1,6 @@
+@RoutingApp.API_HostAddress = http://localhost:5065
+
+GET {{RoutingApp.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
