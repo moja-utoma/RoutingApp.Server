@@ -15,17 +15,27 @@ namespace RoutingApp.API.Controllers
 	public class DeliveryPointsController : Controller
 	{
 		private readonly IDeliveryPointService _pointService;
+        private readonly ILogger<DeliveryPointsController> _logger;
 
-		public DeliveryPointsController(IDeliveryPointService pointService)
+        public DeliveryPointsController(IDeliveryPointService pointService, ILogger<DeliveryPointsController> logger)
 		{
 			_pointService = pointService;
+			_logger = logger; 
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> GetAll([FromQuery] QueryParametersModel filters)
 		{
-			var result = await _pointService.GetAllPointsAsync(filters);
-			return Ok(result);
+			try
+			{
+				var result = await _pointService.GetAllPointsAsync(filters);
+				return Ok(result);
+			}
+			catch (Exception e)
+            {
+                _logger.LogError(e, "Encountered error while getting delivery points: {e.Message}", e.Message);
+                return BadRequest(e.Message);
+            }
 		}
 
 		[HttpGet("{id}")]

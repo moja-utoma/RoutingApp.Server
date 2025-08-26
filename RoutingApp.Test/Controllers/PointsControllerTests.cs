@@ -1,11 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using RoutingApp.API.Controllers;
 using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
-using RoutingApp.API.Models.DTO;
+using RoutingApp.API.Models.Response.GetAll;
 using RoutingApp.API.Services.Interfaces;
 
 namespace RoutingApp.Test;
@@ -14,10 +15,11 @@ public class PointsControllerTests
 {
     private readonly Mock<IDeliveryPointService> _serviceMock;
     private readonly DeliveryPointsController _controller;
+    private readonly Mock<ILogger<DeliveryPointsController>> _logger;
     public PointsControllerTests()
     {
         _serviceMock = new Mock<IDeliveryPointService>();
-        _controller = new DeliveryPointsController(_serviceMock.Object);
+        _controller = new DeliveryPointsController(_serviceMock.Object, _logger.Object);
     }
 
     [Fact]

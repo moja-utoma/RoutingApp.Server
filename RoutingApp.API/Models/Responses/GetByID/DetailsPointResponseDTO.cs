@@ -1,8 +1,8 @@
 ﻿using RoutingApp.API.Enumerations;
 
-namespace RoutingApp.API.Models.DTO
+namespace RoutingApp.API.Models.Response.GetAll
 {
-	public class PointResponseDTO
+	public class DetailsPointResponseDTO
 	{
 		public int Id { get; set; }
 		public required string Name { get; set; }

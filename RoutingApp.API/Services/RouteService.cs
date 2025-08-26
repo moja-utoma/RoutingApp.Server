@@ -1,6 +1,7 @@
 ﻿using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
+using RoutingApp.API.Models.Response.GetAll;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using Route = RoutingApp.API.Data.Entities.Route;

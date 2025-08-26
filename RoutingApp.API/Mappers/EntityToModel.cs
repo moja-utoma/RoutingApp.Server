@@ -1,6 +1,6 @@
 ﻿using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Response;
+using RoutingApp.API.Models.Response.GetAll;
+using RoutingApp.API.Models.Response.GetByID;
 using Route = RoutingApp.API.Data.Entities.Route;
 
 namespace RoutingApp.API.Mappers
@@ -25,7 +25,30 @@ namespace RoutingApp.API.Mappers
 			return points.Select(CreateModelFromDeliveryPoint);
 		}
 
-		public static WarehouseResponseDTO CreateModelFromWarehouse(Warehouse point)
+        public static VehiclesForWarehouseDTO CreateModelFromVehicleForWarehouse(Vehicle vehicle)
+        {
+            return new VehiclesForWarehouseDTO
+            {
+                Id = vehicle.Id,
+                Name = vehicle.Name,
+                Capacity = vehicle.Capacity
+            };
+        }
+
+        public static DetailsWarehouseResponseDTO CreateOneModelFromWarehouse(Warehouse point)
+        {
+            return new DetailsWarehouseResponseDTO
+            {
+                Id = point.Id,
+                Name = point.Name,
+                Address = point.Address,
+                Longitude = point.Longitude,
+                Latitude = point.Latitude,
+                Vehicles = point.Vehicles != null ? point.Vehicles.Select(CreateModelFromVehicleForWarehouse).ToList() : null,
+            };
+        }
+
+        public static WarehouseResponseDTO CreateModelFromWarehouse(Warehouse point)
 		{
 			return new WarehouseResponseDTO
 			{

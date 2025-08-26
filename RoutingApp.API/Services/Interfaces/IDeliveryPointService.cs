@@ -2,6 +2,7 @@
 using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
+using RoutingApp.API.Models.Response.GetAll;
 
 namespace RoutingApp.API.Services.Interfaces
 {

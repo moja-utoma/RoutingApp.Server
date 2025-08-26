@@ -35,7 +35,8 @@ builder.Logging.AddDebug();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB"))
-        .AddInterceptors(new SoftDeleteInterceptor()));
+        .AddInterceptors(new SoftDeleteInterceptor())
+        );
 
 //Point
 

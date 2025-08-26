@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.Request;
-using RoutingApp.API.Models.Response;
+using RoutingApp.API.Models.Response.GetAll;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 

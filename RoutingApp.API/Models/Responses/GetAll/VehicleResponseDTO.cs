@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RoutingApp.API.Models.DTO;
 
-namespace RoutingApp.API.Models.Response
+namespace RoutingApp.API.Models.Response.GetAll
 {
     public class VehicleResponseDTO
     {
