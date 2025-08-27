@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RoutingApp.API.Models.Request;
-using RoutingApp.API.Models.Response.GetAll;
+using RoutingApp.API.Models.Responses.Vehicles;
 
 namespace RoutingApp.API.Services.Interfaces
 {

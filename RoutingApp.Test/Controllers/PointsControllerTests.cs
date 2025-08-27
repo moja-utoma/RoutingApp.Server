@@ -6,7 +6,8 @@ using Moq;
 using RoutingApp.API.Controllers;
 using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
-using RoutingApp.API.Models.Response.GetAll;
+using RoutingApp.API.Models.Responses.Base;
+using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Services.Interfaces;
 
 namespace RoutingApp.Test;

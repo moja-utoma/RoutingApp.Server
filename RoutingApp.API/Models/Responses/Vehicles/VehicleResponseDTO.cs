@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RoutingApp.API.Models.DTO;
 
-namespace RoutingApp.API.Models.Response.GetAll
+namespace RoutingApp.API.Models.Responses.Vehicles
 {
     public class VehicleResponseDTO
     {
@@ -13,11 +13,6 @@ namespace RoutingApp.API.Models.Response.GetAll
         public decimal Capacity { get; set; }
         public int? WarehouseId { get; set; }
         public string? WarehouseName { get; set; }
-        public string? WarehouseAddress { get; set; }
-        //public WarehouseResponse? Warehouse { get; set; } // -
-        // warehouse id
-        //           name
-        //           address
-
+        public string? WarehouseAddress { get; set; } 
     }
 }

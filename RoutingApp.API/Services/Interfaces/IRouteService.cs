@@ -1,5 +1,5 @@
 ﻿using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Response.GetAll;
+using RoutingApp.API.Models.Responses.Routes;
 
 namespace RoutingApp.API.Services.Interfaces
 {

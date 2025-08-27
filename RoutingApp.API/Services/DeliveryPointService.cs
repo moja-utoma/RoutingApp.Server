@@ -6,7 +6,7 @@ using RoutingApp.API.Enumerations;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Response.GetAll;
+using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 

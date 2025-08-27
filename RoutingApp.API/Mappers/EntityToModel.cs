@@ -1,6 +1,9 @@
 ﻿using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Models.Response.GetAll;
 using RoutingApp.API.Models.Response.GetByID;
+using RoutingApp.API.Models.Responses.DeliveryPoints;
+using RoutingApp.API.Models.Responses.Routes;
+using RoutingApp.API.Models.Responses.Vehicles;
+using RoutingApp.API.Models.Responses.Warehouse;
 using Route = RoutingApp.API.Data.Entities.Route;
 
 namespace RoutingApp.API.Mappers

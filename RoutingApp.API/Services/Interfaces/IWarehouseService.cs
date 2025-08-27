@@ -2,8 +2,8 @@
 using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Response.GetAll;
 using RoutingApp.API.Models.Response.GetByID;
+using RoutingApp.API.Models.Responses.Warehouse;
 
 namespace RoutingApp.API.Services.Interfaces
 {

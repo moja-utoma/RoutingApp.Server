@@ -1,6 +1,7 @@
 ﻿using RoutingApp.API.Enumerations;
+using RoutingApp.API.Models.Responses.Base;
 
-namespace RoutingApp.API.Models.Response.GetAll
+namespace RoutingApp.API.Models.Responses.DeliveryPoints
 {
 	public class DeliveryPointResponseDTO : PointResponseDTO
 	{

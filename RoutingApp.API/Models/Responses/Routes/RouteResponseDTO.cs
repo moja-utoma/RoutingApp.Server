@@ -1,4 +1,4 @@
-﻿namespace RoutingApp.API.Models.Response.GetAll
+﻿namespace RoutingApp.API.Models.Responses.Routes
 {
 	public class RouteResponseDTO
 	{
