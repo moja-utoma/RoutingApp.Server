@@ -10,7 +10,7 @@ namespace RoutingApp.API.Services.Interfaces
     public interface IVehicleService : IDeletable
     {
         Task<IEnumerable<VehicleResponseDTO>> GetAllVehiclesAsync();
-        Task<VehicleResponseDTO?> GetVehicleByIDAsync(int id);
+        Task<VehicleDetailsResponseDTO?> GetVehicleByIDAsync(int id);
         Task<VehicleResponseDTO> CreateVehicleAsync(CreateVehicleRequestDTO request);
         Task<VehicleResponseDTO> EditAsync(EditVehicleRequestDTO request);
     }

@@ -27,7 +27,7 @@ namespace RoutingApp.API.Services
 			return EntityToModel.CreateModelsFromDeliveryPoints(result);
 		}
 
-		public async Task<DeliveryPointResponseDTO?> GetPointByIDAsync(int id)
+		public async Task<DeliveryPointDetailsResponseDTO?> GetPointByIDAsync(int id)
 		{
 			var result = await _repository.GetByIdAsync(id);
 			if (result == null)
@@ -35,7 +35,7 @@ namespace RoutingApp.API.Services
 				throw new Exception("Not found");
 			}
 
-			return EntityToModel.CreateModelFromDeliveryPoint(result);
+			return EntityToModel.CreateModelForDetailsFromDeliveryPoint(result);
 		}
 
 		public async Task<DeliveryPointResponseDTO> CreatePointAsync(CreateDeliveryPointRequestDTO point)

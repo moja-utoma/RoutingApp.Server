@@ -52,7 +52,7 @@ namespace RoutingApp.API.Services
 			return EntityToModel.CreateModelsFromRoutes(result);
 		}
 
-		public async Task<RouteResponseDTO?> GetRouteByIDAsync(int id)
+		public async Task<RouteDetailsResponseDTO?> GetRouteByIDAsync(int id)
 		{
 			var result = await _routeRepository.GetByIdAsync(id);
 			if (result == null)
@@ -60,7 +60,7 @@ namespace RoutingApp.API.Services
 				throw new Exception("Not found");
 			}
 
-			return EntityToModel.CreateModelFromRoute(result);
+			return EntityToModel.CreateModelForDetailsFromRoute(result);
 		}
 
 		public async Task DeleteAsync(int id)

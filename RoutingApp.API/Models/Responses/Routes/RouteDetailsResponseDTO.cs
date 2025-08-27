@@ -1,5 +1,4 @@
-﻿using RoutingApp.API.Models.Response.GetAll;
-using RoutingApp.API.Models.Responses.DeliveryPoints;
+﻿using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Models.Responses.Warehouse;
 
 namespace RoutingApp.API.Models.Responses.Routes

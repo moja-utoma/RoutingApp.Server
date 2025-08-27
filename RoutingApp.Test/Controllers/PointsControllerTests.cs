@@ -52,7 +52,7 @@ public class PointsControllerTests
     public async Task GetByID_ShouldReturnPoint()
     {
         // Arrange
-        var point = new DeliveryPointResponseDTO { Id = 1, Name = "Test", Address = "Addr", Longitude = 10, Latitude = 20, Weight=20m };
+        var point = new DeliveryPointDetailsResponseDTO { Id = 1, Name = "Test", Address = "Addr", Longitude = 10, Latitude = 20, Weight=20m };
         _serviceMock
             .Setup(s => s.GetPointByIDAsync(1))
             .ReturnsAsync(point);

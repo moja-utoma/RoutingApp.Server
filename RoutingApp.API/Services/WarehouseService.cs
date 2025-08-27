@@ -5,8 +5,8 @@ using RoutingApp.API.Enumerations;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Response.GetByID;
 using RoutingApp.API.Models.Responses.Warehouse;
+using RoutingApp.API.Models.Responses.Warehouses;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using System.Globalization;
@@ -30,7 +30,7 @@ namespace RoutingApp.API.Services
 			return EntityToModel.CreateModelsFromWarehouses(result);
 		}
 
-		public async Task<DetailsWarehouseResponseDTO?> GetPointByIDAsync(int id)
+		public async Task<WarehouseDetailsResponseDTO?> GetPointByIDAsync(int id)
 		{
 			var result = await _repository.GetByIdAsync(id);
 			if (result == null)
@@ -38,7 +38,7 @@ namespace RoutingApp.API.Services
 				throw new Exception("Not found");
 			}
 
-			return EntityToModel.CreateOneModelFromWarehouse(result);
+			return EntityToModel.CreateModelForDetailsFromWarehouse(result);
 		}
 
 		public async Task<WarehouseResponseDTO> CreatePointAsync(CreateWarehouseRequestDTO point)
