@@ -34,7 +34,15 @@ builder.Logging.AddDebug();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options
-        .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB"))
+        .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB")
+        //, sqlServerOptionsAction: sqlOptions =>
+        //{
+        //    sqlOptions.EnableRetryOnFailure(
+        //        maxRetryCount: 3,
+        //        maxRetryDelay: TimeSpan.FromSeconds(30),
+        //        errorNumbersToAdd: null);
+        //}
+        )
         .AddInterceptors(new SoftDeleteInterceptor())
         );
 

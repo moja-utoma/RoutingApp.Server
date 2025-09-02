@@ -5,3 +5,4 @@
 		public decimal Weight { get; set; }
 	}
 }
+	
