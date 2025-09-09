@@ -5,6 +5,8 @@ using RoutingApp.API.Enumerations;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
+using RoutingApp.API.Models.Responses;
+using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Models.Responses.Warehouse;
 using RoutingApp.API.Models.Responses.Warehouses;
 using RoutingApp.API.Repositories.Interfaces;
@@ -24,11 +26,25 @@ namespace RoutingApp.API.Services
 			_vehicleRepository = vehicleRepository;
 		}
 
-		public async Task<IEnumerable<WarehouseResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
+		public async Task<PaginatedResponseDTO<WarehouseResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
 		{
-			var result = await _repository.GetAllWithParamsAsync(filters);
-			return EntityToModel.CreateModelsFromWarehouses(result);
-		}
+			var query = _repository.GetAllWithParams(filters);
+            var paginated = await PaginatedList<Warehouse>.CreateAsync(
+        query,
+        filters.Page,
+        filters.PageSize,
+        EntityToModel.CreateModelFromWarehouse
+    );
+
+            return new PaginatedResponseDTO<WarehouseResponseDTO>
+            {
+                PageIndex = paginated.PageIndex,
+                TotalPages = paginated.TotalPages,
+                HasPreviousPage = paginated.HasPreviousPage,
+                HasNextPage = paginated.HasNextPage,
+                Items = paginated.ToList()
+            };
+        }
 
 		public async Task<WarehouseDetailsResponseDTO?> GetPointByIDAsync(int id)
 		{

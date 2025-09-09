@@ -19,7 +19,7 @@ namespace RoutingApp.API.Repositories
             //_dbSet = context.Set<Point>();
         }
 
-        public async Task<IEnumerable<DeliveryPoint>> GetAllWithParamsAsync(QueryParametersModel filters)
+        public IQueryable<DeliveryPoint> GetAllWithParams(QueryParametersModel filters)
         {
             IQueryable<DeliveryPoint> query = _context.Set<DeliveryPoint>();
             if (!string.IsNullOrWhiteSpace(filters.SearchString))
@@ -29,15 +29,20 @@ namespace RoutingApp.API.Repositories
                     EF.Functions.Like(e.Address, $"%{filters.SearchString}%"));
             }
 
+            var deliveryPointProperties = typeof(DeliveryPoint)
+    .GetProperties()
+    .Select(p => p.Name)
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var normalizedOrderBy = deliveryPointProperties
+                .FirstOrDefault(p => p.Equals(filters.OrderBy, StringComparison.OrdinalIgnoreCase))
+                ?? "Name";
             query = filters.IsDesc
-                ? query.OrderByDescending(e => EF.Property<object>(e, filters.OrderBy))
-                : query.OrderBy(e => EF.Property<object>(e, filters.OrderBy));
+    ? query.OrderByDescending(e => EF.Property<object>(e, normalizedOrderBy))
+    : query.OrderBy(e => EF.Property<object>(e, normalizedOrderBy));
 
-            query = query
-                .Skip((filters.Page - 1) * filters.PageSize)
-                .Take(filters.PageSize);
 
-            return await query.ToListAsync();
+            return query;
         }
     }
 }

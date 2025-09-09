@@ -25,11 +25,11 @@ namespace RoutingApp.API.Data.Configurations
 
 			builder.Property(p => p.Longitude)
 				.HasColumnType("decimal")
-				.HasPrecision(9, 6);
+				.HasPrecision(17, 14);
 
 			builder.Property(p => p.Latitude)
 				.HasColumnType("decimal")
-				.HasPrecision(8, 6);
+				.HasPrecision(17, 14);
 		}
 	}
 }

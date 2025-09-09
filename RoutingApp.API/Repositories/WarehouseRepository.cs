@@ -19,7 +19,7 @@ namespace RoutingApp.API.Repositories
             //_dbSet = context.Set<Point>();
         }
 
-        public async Task<IEnumerable<Warehouse>> GetAllWithParamsAsync(QueryParametersModel filters)
+        public IQueryable<Warehouse> GetAllWithParams(QueryParametersModel filters)
         {
             IQueryable<Warehouse> query = _context.Set<Warehouse>();
             if (!string.IsNullOrWhiteSpace(filters.SearchString))
@@ -29,15 +29,19 @@ namespace RoutingApp.API.Repositories
                     EF.Functions.Like(e.Address, $"%{filters.SearchString}%"));
             }
 
+            var properties = typeof(Warehouse)
+    .GetProperties()
+    .Select(p => p.Name)
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var normalizedOrderBy = properties
+                .FirstOrDefault(p => p.Equals(filters.OrderBy, StringComparison.OrdinalIgnoreCase))
+                ?? "Name";
             query = filters.IsDesc
-                ? query.OrderByDescending(e => EF.Property<object>(e, filters.OrderBy))
-                : query.OrderBy(e => EF.Property<object>(e, filters.OrderBy));
+    ? query.OrderByDescending(e => EF.Property<object>(e, normalizedOrderBy))
+    : query.OrderBy(e => EF.Property<object>(e, normalizedOrderBy));
 
-            query = query
-                .Skip((filters.Page - 1) * filters.PageSize)
-                .Take(filters.PageSize);
-
-            return await query.ToListAsync();
+            return query;
         }
 
     }
