@@ -1,5 +1,4 @@
-﻿using RoutingApp.API.Enumerations;
-using RoutingApp.API.Models.Responses.Base;
+﻿using RoutingApp.API.Models.Responses.Base;
 
 namespace RoutingApp.API.Models.Responses.Warehouse
 {

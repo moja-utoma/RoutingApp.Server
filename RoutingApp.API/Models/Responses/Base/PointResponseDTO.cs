@@ -1,6 +1,4 @@
-﻿using RoutingApp.API.Enumerations;
-
-namespace RoutingApp.API.Models.Responses.Base
+﻿namespace RoutingApp.API.Models.Responses.Base
 {
 	public class PointResponseDTO
 	{

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RoutingApp.API.Data;
 using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
 using RoutingApp.API.Repositories.Interfaces;
 using Route = RoutingApp.API.Data.Entities.Route;

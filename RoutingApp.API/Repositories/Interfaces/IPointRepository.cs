@@ -1,5 +1,4 @@
 using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
 using Route = RoutingApp.API.Data.Entities.Route;
 

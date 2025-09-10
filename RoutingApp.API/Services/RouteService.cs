@@ -1,4 +1,5 @@
-﻿using RoutingApp.API.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Models.Responses.Routes;
@@ -48,7 +49,7 @@ namespace RoutingApp.API.Services
 
 		public async Task<IEnumerable<RouteResponseDTO>> GetAllRoutesAsync()
 		{
-			var result = await _routeRepository.GetAllAsync();
+			var result = await _routeRepository.GetAll().ToListAsync();
 			return EntityToModel.CreateModelsFromRoutes(result);
 		}
 

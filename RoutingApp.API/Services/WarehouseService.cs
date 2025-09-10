@@ -1,7 +1,8 @@
 ﻿using CsvHelper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Enumerations;
+using RoutingApp.API.Extensions;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
@@ -12,6 +13,7 @@ using RoutingApp.API.Models.Responses.Warehouses;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using System.Globalization;
+using System.Linq.Expressions;
 
 namespace RoutingApp.API.Services
 {
@@ -28,25 +30,25 @@ namespace RoutingApp.API.Services
 
 		public async Task<PaginatedResponseDTO<WarehouseResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
 		{
-			var query = _repository.GetAllWithParams(filters);
-            var paginated = await PaginatedList<Warehouse>.CreateAsync(
-        query,
-        filters.Page,
-        filters.PageSize,
-        EntityToModel.CreateModelFromWarehouse
-    );
+			var query = _repository.GetAll();
+			var result1 =  query.Select(ToDto);
+              var result = await result1.ApplyPagination(filters);
 
-            return new PaginatedResponseDTO<WarehouseResponseDTO>
-            {
-                PageIndex = paginated.PageIndex,
-                TotalPages = paginated.TotalPages,
-                HasPreviousPage = paginated.HasPreviousPage,
-                HasNextPage = paginated.HasNextPage,
-                Items = paginated.ToList()
-            };
+			return result;
         }
 
-		public async Task<WarehouseDetailsResponseDTO?> GetPointByIDAsync(int id)
+        public static readonly Expression<Func<Warehouse, WarehouseResponseDTO>> ToDto =
+        point => new WarehouseResponseDTO
+        {
+            Id = point.Id,
+            Name = point.Name,
+            Address = point.Address,
+            Longitude = point.Longitude,
+            Latitude = point.Latitude,
+			VehicleQuantity = point.Vehicles != null ? point.Vehicles.Count() : 0,
+        };
+
+        public async Task<WarehouseDetailsResponseDTO?> GetPointByIDAsync(int id)
 		{
 			var result = await _repository.GetByIdAsync(id);
 			if (result == null)
@@ -104,7 +106,7 @@ namespace RoutingApp.API.Services
                 {
 					throw new Exception("Some vehicles are invalid");
                 }
-				entity.Vehicles = vehicles;
+				entity.Vehicles = vehicles.ToList();
             }
 
 			await _repository.SaveChangesAsync();

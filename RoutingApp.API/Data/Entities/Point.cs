@@ -1,5 +1,4 @@
-﻿using RoutingApp.API.Enumerations;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace RoutingApp.API.Data.Entities
 {

@@ -1,7 +1,8 @@
 ﻿using CsvHelper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Enumerations;
+using RoutingApp.API.Extensions;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
@@ -10,6 +11,7 @@ using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using System.Globalization;
+using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace RoutingApp.API.Services
@@ -25,26 +27,26 @@ namespace RoutingApp.API.Services
 
         public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
         {
-            var query = _repository.GetAllWithParams(filters);
+            var query = _repository.GetAll();
+            var result = await query.Select(ToDto)
+                .ApplyPagination(filters);
             //_repository.GetAllWithParams(filters);
 
-            var paginated = await PaginatedList<DeliveryPoint>.CreateAsync(
-                query,
-                filters.Page,
-                filters.PageSize,
-                EntityToModel.CreateModelFromDeliveryPoint
-            );
+            //result.Items = EntityToModel.CreateModelsFromDeliveryPoints(result.Items);
 
-            return new PaginatedResponseDTO<DeliveryPointResponseDTO>
-            {
-                PageIndex = paginated.PageIndex,
-                TotalPages = paginated.TotalPages,
-                HasPreviousPage = paginated.HasPreviousPage,
-                HasNextPage = paginated.HasNextPage,
-                Items = paginated.ToList()
-
-            };
+            return result;
         }
+
+        public static readonly Expression<Func<DeliveryPoint, DeliveryPointResponseDTO>> ToDto =
+        point => new DeliveryPointResponseDTO
+        {
+            Id = point.Id,
+            Name = point.Name,
+            Address = point.Address,
+            Longitude = point.Longitude,
+            Latitude = point.Latitude,
+            Weight = point.Weight
+        };
 
         public async Task<DeliveryPointDetailsResponseDTO?> GetPointByIDAsync(int id)
         {

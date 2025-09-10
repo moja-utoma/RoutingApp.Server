@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.Request;
@@ -40,7 +41,7 @@ namespace RoutingApp.API.Services
 
         public async Task<IEnumerable<VehicleResponseDTO>> GetAllVehiclesAsync()
         {
-            var result = await _repository.GetAllAsync();
+            var result = await _repository.GetAll().ToListAsync();
             return EntityToModel.CreateModelsFromVehicles(result);
         }
 

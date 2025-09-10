@@ -1,5 +1,3 @@
-using RoutingApp.API.Enumerations;
-
 namespace RoutingApp.API.Models;
 
 public class QueryParametersModel

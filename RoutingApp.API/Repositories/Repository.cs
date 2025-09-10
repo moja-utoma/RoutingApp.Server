@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RoutingApp.API.Data;
-using RoutingApp.API.Enumerations;
 using RoutingApp.API.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -15,12 +14,12 @@ namespace RoutingApp.API.Repositories
 			_context = context;
 		}
 
-		public async Task<IEnumerable<T>> GetAllAsync()
-		{
-			return await _context.Set<T>().ToListAsync();
-		}
+        public IQueryable<T> GetAll()
+        {
+            return _context.Set<T>().AsNoTracking();
+        }
 
-		public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
 		{
 			return await _context.Set<T>().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
 		}
