@@ -26,7 +26,7 @@ namespace RoutingApp.API.Services
         public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
         {
             var query = _repository.GetAllWithParams(filters);
-            _repository.GetAllWithParams(filters);
+            //_repository.GetAllWithParams(filters);
 
             var paginated = await PaginatedList<DeliveryPoint>.CreateAsync(
                 query,
