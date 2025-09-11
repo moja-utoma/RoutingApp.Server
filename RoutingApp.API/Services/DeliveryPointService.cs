@@ -28,14 +28,27 @@ namespace RoutingApp.API.Services
         public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
         {
             var query = _repository.GetAll();
+            query = query.ApplySearch(filters.SearchString);
+            query = query.ApplySorting(SortMappings.GetValueOrDefault(filters.OrderBy, SortMappings["Name"]), filters.IsDesc);
             var result = await query.Select(ToDto)
                 .ApplyPagination(filters);
             //_repository.GetAllWithParams(filters);
 
-            //result.Items = EntityToModel.CreateModelsFromDeliveryPoints(result.Items);
+            //result.Items = result.Items.ApplySorting(filters.OrderBy, filters.IsDesc);
 
             return result;
         }
+
+
+        public static readonly Dictionary<string, Expression<Func<DeliveryPoint, object>>> SortMappings =
+    new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Id"] = w => w.Id,
+        ["Name"] = w => w.Name,
+        ["Address"] = w => w.Address,
+        ["Weight"] = w => w.Weight,
+
+    };
 
         public static readonly Expression<Func<DeliveryPoint, DeliveryPointResponseDTO>> ToDto =
         point => new DeliveryPointResponseDTO

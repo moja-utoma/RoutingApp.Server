@@ -2,6 +2,8 @@
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.Responses;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -12,31 +14,33 @@ namespace RoutingApp.API.Extensions
         public static async Task<PaginatedResponseDTO<T>> ApplyPagination<T>(this IQueryable<T> query,
             QueryParametersModel filters) where T : class
         {
-            if (!string.IsNullOrWhiteSpace(filters.SearchString))
-            {
-                var stringProps = typeof(T)
-                    .GetProperties()
-                    .Where(p => p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal))
-                    .Select(p => p.Name)
-                    .ToArray();
+            //if (!string.IsNullOrWhiteSpace(filters.SearchString))
+            //{
+            //    var stringProps = typeof(T)
+            //        .GetProperties()
+            //        .Where(p => p.PropertyType == typeof(string)) //|| p.PropertyType == typeof(decimal)
+            //        .Select(p => p.Name)
+            //        .ToArray();
 
-                query = query.ApplySearch(filters.SearchString, stringProps);
-            }
+            //    query = query.ApplySearch(filters.SearchString, stringProps);
+            //}
 
-            var propertiesRaw = typeof(T).GetProperties();
-            var propsFiltered = propertiesRaw
-            .Where(p => p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal));
-               
-            var properties = propsFiltered.Select(p => p.Name)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            //query = query.ApplySorting(filters.OrderBy, filters.IsDesc);
 
-            var normalizedOrderBy = properties
-                .FirstOrDefault(p => p.Equals(filters.OrderBy, StringComparison.OrdinalIgnoreCase))
-                ?? properties.FirstOrDefault() ?? "Id";
+            //var propertiesRaw = typeof(T).GetProperties();
+            //var propsFiltered = propertiesRaw
+            //.Where(p => p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal) || p.PropertyType == typeof(int));
 
-            query = filters.IsDesc
-                ? query.OrderByDescending(e => EF.Property<object>(e, normalizedOrderBy))
-                : query.OrderBy(e => EF.Property<object>(e, normalizedOrderBy));
+            //var properties = propsFiltered.Select(p => p.Name)
+            //    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            //var normalizedOrderBy = properties
+            //    .FirstOrDefault(p => p.Equals(filters.OrderBy, StringComparison.OrdinalIgnoreCase))
+            //    ?? properties.FirstOrDefault() ?? "Id";
+
+            //query = filters.IsDesc
+            //    ? query.OrderByDescending(e => EF.Property<object>(e, normalizedOrderBy))
+            //    : query.OrderBy(e => EF.Property<object>(e, normalizedOrderBy));
 
             var totalCount = await query.CountAsync();
             var items = await query
@@ -51,13 +55,81 @@ namespace RoutingApp.API.Extensions
             };
         }
 
+        public static IQueryable<T> ApplySorting<T>(
+            this IQueryable<T> query,
+            string orderBy,
+            bool isDesc) where T : class
+        {
+            if (string.IsNullOrWhiteSpace(orderBy))
+                return query;
+
+            var property = typeof(T).GetProperty(orderBy,
+                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
+            if (property == null)
+                return query;
+
+            var param = Expression.Parameter(typeof(T), "e");
+            Expression sortExpression;
+
+            // Handle collections by sorting on Count()
+            if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string))
+            {
+                var propertyAccess = Expression.Property(param, property);
+
+                var countProperty = typeof(Enumerable)
+                    .GetMethods(BindingFlags.Static | BindingFlags.Public)
+                    .FirstOrDefault(m => m.Name == "Count" && m.GetParameters().Length == 1)?
+                    .MakeGenericMethod(property.PropertyType.GetGenericArguments().FirstOrDefault() ?? typeof(object));
+
+                if (countProperty == null)
+                    return query;
+
+                sortExpression = Expression.Call(countProperty, propertyAccess);
+            }
+            // Handle simple types directly
+            else if (property.PropertyType.IsPrimitive || property.PropertyType == typeof(string) || property.PropertyType == typeof(decimal) || property.PropertyType == typeof(DateTime))
+            {
+                sortExpression = Expression.Convert(Expression.Property(param, property), typeof(object));
+            }
+            else
+            {
+                // Unsupported complex type
+                return query;
+            }
+
+            var lambda = Expression.Lambda<Func<T, object>>(sortExpression, param);
+
+            return isDesc
+                ? query.OrderByDescending(lambda)
+                : query.OrderBy(lambda);
+        }
+
+        public static IQueryable<T> ApplySorting<T>(
+        this IQueryable<T> query,
+        Expression<Func<T, object>> sortExpression,
+        bool isDescending)
+        {
+            if (sortExpression == null)
+                return query;
+
+            return isDescending
+                ? query.OrderByDescending(sortExpression)
+                : query.OrderBy(sortExpression);
+        }
+
         public static IQueryable<T> ApplySearch<T>(
             this IQueryable<T> query,
-            string searchString,
-            params string[] searchableProperties) where T : class
+            string searchString) where T : class
         {
-            if (string.IsNullOrWhiteSpace(searchString) || searchableProperties.Length == 0)
+            if (string.IsNullOrWhiteSpace(searchString))
                 return query;
+
+            var searchableProperties = typeof(T)
+                    .GetProperties()
+                    .Where(p => p.PropertyType == typeof(string))
+                    .Select(p => p.Name)
+                    .ToArray();
 
             var parameter = Expression.Parameter(typeof(T), "e");
             Expression predicate = null;
@@ -67,7 +139,7 @@ namespace RoutingApp.API.Extensions
                 var property = typeof(T).GetProperty(propName,
                     BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-                if (property != null && (property.PropertyType == typeof(string) || property.PropertyType == typeof(decimal)))
+                if (property != null && (property.PropertyType == typeof(string))) // || property.PropertyType == typeof(decimal)
                 {
                     var propertyAccess = Expression.Property(parameter, property);
 

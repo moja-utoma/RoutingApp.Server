@@ -29,9 +29,9 @@ namespace RoutingApp.API.Repositories
             }
 
             var deliveryPointProperties = typeof(DeliveryPoint)
-    .GetProperties()
-    .Select(p => p.Name)
-    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                .GetProperties()
+                .Select(p => p.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var normalizedOrderBy = deliveryPointProperties
                 .FirstOrDefault(p => p.Equals(filters.OrderBy, StringComparison.OrdinalIgnoreCase))
