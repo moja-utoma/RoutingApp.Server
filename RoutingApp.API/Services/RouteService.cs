@@ -3,6 +3,7 @@ using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Models.Responses.Routes;
+using RoutingApp.API.Models.ThirdParty;
 using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using Route = RoutingApp.API.Data.Entities.Route;
@@ -115,5 +116,48 @@ namespace RoutingApp.API.Services
             await _routeRepository.SaveChangesAsync();
 			return EntityToModel.CreateModelFromRoute(entity);
 		}
-	}
+
+        public async Task<RouteCalculationRequest> CalculateRouteAsync(int id)
+		{
+			var route = await _routeRepository.GetByIdAsync(id);
+			if (route == null)
+				throw new Exception("Not found");
+
+            var vehicles = route.Warehouses
+				.Where(w => w.Vehicles != null)
+				.SelectMany(w => w.Vehicles)
+                .Select(v => new VehicleForCalculationDTO
+                {
+                    Id = v.Id,
+                    Name = v.Name,
+                    Capacity = v.Capacity,
+                    Warehouse = v.Warehouse.Id
+                })
+                .ToList();
+
+
+            var exportDto = new RouteCalculationRequest
+            {
+                Id = route.Id,
+                Warehouses = route.Warehouses.Select(w => new WarehouseForCalculationDTO
+                {
+                    Id = w.Id,
+                    Name = w.Name,
+                    Latitude = w.Latitude,
+                    Longitude = w.Longitude
+                }).ToList(),
+                Vehicles = vehicles,
+                Points = route.DeliveryPoints.Select(p => new DeliveryPointForCalculationDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Weight = p.Weight,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude
+                }).ToList()
+            };
+
+			return exportDto;
+        }
+    }
 }

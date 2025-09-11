@@ -24,6 +24,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
+builder.Services.AddHttpClient();
+
 // builder.Services.AddSingleton<SoftDeleteInterceptor>();
 // builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 // {

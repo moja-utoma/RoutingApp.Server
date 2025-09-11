@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace RoutingApp.API.Controllers
@@ -14,11 +15,13 @@ namespace RoutingApp.API.Controllers
 	{
 		private readonly IRouteService _routeService;
         private readonly ILogger<RoutesController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public RoutesController(IRouteService routeService, ILogger<RoutesController> logger)
+        public RoutesController(IRouteService routeService, ILogger<RoutesController> logger, IHttpClientFactory httpClientFactory)
 		{
 			_routeService = routeService;
 			_logger = logger;
+            _httpClientFactory=httpClientFactory;
 
             _logger.LogInformation("RoutesController Started");
         }
@@ -90,6 +93,25 @@ namespace RoutingApp.API.Controllers
 			{
                 _logger.LogError(e, "Encountered error while updating route: {e.Message}", e.Message);
                 return BadRequest(e.Message);
+			}
+		}
+
+		[HttpPost("Calculate/{id}")]
+		public async Task<IActionResult> CalculateRoute(int id)
+		{
+			try
+			{
+				var request = await _routeService.CalculateRouteAsync(id);
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", request);
+
+                return Ok(response.Content.ReadAsStringAsync());
+			}
+			catch (Exception e)
+			{
+
+				return BadRequest(e.Message);
 			}
 		}
 	}
