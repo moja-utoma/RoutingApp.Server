@@ -47,9 +47,7 @@ namespace RoutingApp.API.Extensions
             return new PaginatedResponseDTO<T>
             {
                 Items = items,
-                TotalCount = totalCount,
-                Page = filters.Page,
-                PageSize = filters.PageSize
+                TotalCount = totalCount
             };
         }
 

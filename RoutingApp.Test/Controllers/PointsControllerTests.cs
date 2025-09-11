@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RoutingApp.API.Controllers;
-using RoutingApp.API.Enumerations;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.Responses.Base;
 using RoutingApp.API.Models.Responses.DeliveryPoints;
