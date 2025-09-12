@@ -1,4 +1,5 @@
 ﻿using RoutingApp.API.Data.Entities;
+using RoutingApp.API.Models.Responses.Routes;
 using Route = RoutingApp.API.Data.Entities.Route;
 
 namespace RoutingApp.API.Repositories.Interfaces
@@ -8,5 +9,7 @@ namespace RoutingApp.API.Repositories.Interfaces
 		Task<IEnumerable<Route>> GetAllWithPointsAsync();
 		Task<Route?> GetByIdWithPointsAsync(int id);
 		//Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids);
-	}
+		Task<CalculatedRouteDto> SaveCalculatedRoute(int id, string route);
+
+    }
 }

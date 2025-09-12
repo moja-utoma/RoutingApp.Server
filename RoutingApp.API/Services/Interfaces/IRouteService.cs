@@ -10,7 +10,7 @@ namespace RoutingApp.API.Services.Interfaces
 		Task<RouteDetailsResponseDTO?> GetRouteByIDAsync(int id);
 		Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request);
 		Task<RouteResponseDTO> EditAsync(EditRouteRequestDTO request);
-		Task<RouteCalculationRequest> CalculateRouteAsync(int id);
+		Task<CalculatedRouteDto> CalculateRouteAsync(int id);
 
     }
 }

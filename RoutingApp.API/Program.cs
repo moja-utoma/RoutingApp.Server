@@ -61,6 +61,7 @@ builder.Services.AddScoped<IPointRepository<Warehouse>, WarehouseRepository>();
 //Route
 builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IRepository<Route>, Repository<Route>>();
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 
 //Vehicle
 builder.Services.AddScoped<IVehicleService, VehicleService>();

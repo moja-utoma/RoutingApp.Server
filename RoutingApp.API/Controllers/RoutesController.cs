@@ -101,12 +101,9 @@ namespace RoutingApp.API.Controllers
 		{
 			try
 			{
-				var request = await _routeService.CalculateRouteAsync(id);
+				var res = await _routeService.CalculateRouteAsync(id);
 
-                var httpClient = _httpClientFactory.CreateClient();
-                var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", request);
-
-                return Ok(response.Content.ReadAsStringAsync());
+                return Ok(res);
 			}
 			catch (Exception e)
 			{

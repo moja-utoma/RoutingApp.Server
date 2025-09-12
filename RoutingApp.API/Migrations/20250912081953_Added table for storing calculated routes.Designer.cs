@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoutingApp.API.Data;
 
@@ -11,9 +12,11 @@ using RoutingApp.API.Data;
 namespace RoutingApp.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDdContextModelSnapshot : ModelSnapshot
+    [Migration("20250912081953_Added table for storing calculated routes")]
+    partial class Addedtableforstoringcalculatedroutes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,9 +66,6 @@ namespace RoutingApp.API.Migrations
                     b.Property<string>("Calculation")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(MAX)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("RouteId")
                         .HasColumnType("int");

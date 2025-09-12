@@ -13,8 +13,9 @@ namespace RoutingApp.API.Data
 		public DbSet<DeliveryPoint> DeliveryPoints { get; set; }
 		public DbSet<Warehouse> Warehouses { get; set; }
 		public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<CalculatedRoute> CalculatedRoutes { get; set; }
 
-		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -22,6 +23,20 @@ namespace RoutingApp.API.Data
 			modelBuilder.ApplyConfiguration(new DeliveryPointConfiguration());
 			modelBuilder.ApplyConfiguration(new WarehouseConfiguration());
 			modelBuilder.ApplyConfiguration(new VehicleConfiguration());
+
+			modelBuilder.Entity<CalculatedRoute>(builder =>
+			{
+				builder.ToTable("CalculatedRoutes");
+
+				builder.HasKey(cr => cr.Id);
+
+				builder.HasOne(r => r.Route).WithMany(cr => cr.CalculatedRoutes);
+
+                builder.Property(p => p.Calculation)
+                .HasColumnType("NVARCHAR(MAX)");
+
+				builder.HasQueryFilter(cr => !cr.Route.IsDeleted);
+            });
 		}
 	}
 }
