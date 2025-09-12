@@ -9,5 +9,6 @@ namespace RoutingApp.API.Models.Responses.Routes
         public required string Name { get; set; }
         public required IEnumerable<WarehouseResponseDTO> Warehouses{ get; set; }
         public required IEnumerable<DeliveryPointResponseDTO> DeliveryPoints { get; set; }
+        public CalculatedRouteDto? CalculatedRoute { get; set; }
     }
 }

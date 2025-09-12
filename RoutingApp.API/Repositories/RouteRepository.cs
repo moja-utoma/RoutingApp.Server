@@ -60,6 +60,13 @@ namespace RoutingApp.API.Repositories
             };
         }
 
+        public async Task<CalculatedRoute?> GetLatestCalculatedRoute(int routeId)
+        {
+            var r = await _context.CalculatedRoutes.Where(r=>r.Route.Id == routeId).OrderByDescending(cr => cr.CreatedAt).FirstOrDefaultAsync();
+            return r;
+
+        }
+
         // public async Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids)
         // {
         // 	return await _dbSet.Include(r => r.Points)

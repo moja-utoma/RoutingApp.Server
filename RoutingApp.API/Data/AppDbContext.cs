@@ -36,6 +36,8 @@ namespace RoutingApp.API.Data
                 .HasColumnType("NVARCHAR(MAX)");
 
 				builder.HasQueryFilter(cr => !cr.Route.IsDeleted);
+
+				builder.Navigation(r=>r.Route).AutoInclude();
             });
 		}
 	}

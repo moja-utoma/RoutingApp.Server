@@ -67,7 +67,9 @@ namespace RoutingApp.API.Services
                 throw new Exception("Not found");
             }
 
-            return EntityToModel.CreateModelForDetailsFromRoute(result);
+            var calcR = await _routeRepository.GetLatestCalculatedRoute(result.Id);
+
+            return EntityToModel.CreateModelForDetailsFromRoute(result, calcR);
         }
 
         public async Task DeleteAsync(int id)

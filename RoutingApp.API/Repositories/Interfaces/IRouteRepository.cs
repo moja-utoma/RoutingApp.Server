@@ -10,6 +10,7 @@ namespace RoutingApp.API.Repositories.Interfaces
 		Task<Route?> GetByIdWithPointsAsync(int id);
 		//Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids);
 		Task<CalculatedRouteDto> SaveCalculatedRoute(int id, string route);
+		Task<CalculatedRoute?> GetLatestCalculatedRoute(int routeId);
 
     }
 }

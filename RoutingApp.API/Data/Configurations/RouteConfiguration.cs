@@ -26,6 +26,7 @@ namespace RoutingApp.API.Data.Configurations
 
 			builder.Navigation(p => p.Warehouses).AutoInclude();
 			builder.Navigation(p => p.DeliveryPoints).AutoInclude();
-		}
+            //builder.Navigation(p => p.CalculatedRoutes).AutoInclude();
+        }
 	}
 }

@@ -94,7 +94,7 @@ namespace RoutingApp.API.Mappers
             return routes.Select(CreateModelFromRoute);
         }
 
-        public static RouteDetailsResponseDTO CreateModelForDetailsFromRoute(Route route)
+        public static RouteDetailsResponseDTO CreateModelForDetailsFromRoute(Route route, CalculatedRoute? calc=null)
         {
             return new RouteDetailsResponseDTO
             {
@@ -102,6 +102,13 @@ namespace RoutingApp.API.Mappers
                 Name = route.Name,
                 Warehouses = route.Warehouses.Select(CreateModelFromWarehouse),
                 DeliveryPoints = route.DeliveryPoints.Select(CreateModelFromDeliveryPoint),
+                CalculatedRoute = calc != null ?
+                new CalculatedRouteDto{
+                    Id=calc.Id,
+                    RouteId=calc.Route.Id,
+                    Calculation=calc.Calculation,
+                    CreatedAt=calc.CreatedAt,
+                } : null
             };
         }
 
