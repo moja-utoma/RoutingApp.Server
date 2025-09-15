@@ -5,6 +5,7 @@ using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RoutingApp.API.Controllers
@@ -16,6 +17,8 @@ namespace RoutingApp.API.Controllers
 		private readonly IRouteService _routeService;
         private readonly ILogger<RoutesController> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private const string OrsUrl = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+        private const string OrsApiKey = "api_key";
 
         public RoutesController(IRouteService routeService, ILogger<RoutesController> logger, IHttpClientFactory httpClientFactory)
 		{
@@ -111,5 +114,29 @@ namespace RoutingApp.API.Controllers
 				return BadRequest(e.Message);
 			}
 		}
-	}
+
+        [HttpPost("ors")]
+        public async Task<IActionResult> GetOrsRoute([FromBody] object payload)
+        {
+            var client = _httpClientFactory.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, OrsUrl)
+            {
+                Content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json")
+            };
+
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", OrsApiKey);
+
+            var response = await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return BadRequest(errorMessage);
+            }
+
+            var geoJson = await response.Content.ReadAsStringAsync();
+            return Ok(geoJson);
+        }
+    }
 }
