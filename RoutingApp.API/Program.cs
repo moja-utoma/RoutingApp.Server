@@ -1,5 +1,7 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 using RoutingApp.API.Data;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Data.Interceptors;
@@ -26,14 +28,6 @@ builder.Logging.AddDebug();
 
 builder.Services.AddHttpClient();
 
-// builder.Services.AddSingleton<SoftDeleteInterceptor>();
-// builder.Services.AddDbContext<AppDbContext>((sp, options) =>
-// {
-//     options
-//         .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB"))
-//         .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>());
-// });
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB")
@@ -48,7 +42,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .AddInterceptors(new SoftDeleteInterceptor())
         );
 
-//Point
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = options.DefaultPolicy;
+});
 
 //DeliveryPoint
 builder.Services.AddScoped<IDeliveryPointService, DeliveryPointService>();
@@ -77,11 +76,14 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:4200")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
 });
 
 var app = builder.Build();
+
+app.UseCors("AllowAngular");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -92,9 +94,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.Use(async (context, next) =>
+//{
+//    if (context.Request.Method == HttpMethods.Options)
+//    {
+//        context.Response.StatusCode = StatusCodes.Status204NoContent;
+//        context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+//        context.Response.Headers.Append("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
+//        context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//        return;
+//    }
 
-app.UseCors("AllowAngular");
+//    await next();
+//});
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

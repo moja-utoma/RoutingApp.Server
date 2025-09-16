@@ -10,7 +10,7 @@ namespace RoutingApp.API.Data.Entities
 		public decimal Longitude { get; set; }
 		public decimal Latitude { get; set; }
 
-		public IEnumerable<Route>? Routes { get; set; }
+		public ICollection<Route>? Routes { get; set; }
 
         public bool IsDeleted { get; set; }
 		public DateTimeOffset? DeletedAt { get; set; }

@@ -89,7 +89,7 @@ namespace RoutingApp.API.Services
                 throw new Exception("No point with such ID found");
             }
 
-            if (!entity.Routes.IsNullOrEmpty())
+            if (entity.Routes != null && entity.Routes.Count > 0)
             {
                 throw new Exception("Point is a part of a route and cannot be deleted");
             }
