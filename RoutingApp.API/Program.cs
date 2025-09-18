@@ -69,6 +69,10 @@ builder.Services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
 //Validation
 builder.Services.AddScoped<IValidator<CreateRouteRequestDTO>, RouteValidator>();
 
+//Ors
+builder.Services.AddScoped<IOrsService, OrsService>();
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
