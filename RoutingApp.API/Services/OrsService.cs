@@ -43,7 +43,9 @@ namespace RoutingApp.API.Services
         public async Task<OrsSearchResponse?> ReverseSearchAsync(double lat, double lng)
         {
             var layers = "address,venue";
-            var url = $"{BaseUrl}/geocode/reverse?api_key={_apiKey}&point.lat={lat}&point.lon={lng}&layers={layers}";
+            var latStr = lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lngStr = lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var url = $"{BaseUrl}/geocode/reverse?api_key={_apiKey}&point.lat={latStr}&point.lon={lngStr}&layers={layers}";
 
             var client = _httpClientFactory.CreateClient();
             var response = await client.GetAsync(url);
@@ -66,9 +68,25 @@ namespace RoutingApp.API.Services
                     var props = f.GetProperty("properties");
                     var layer = props.TryGetProperty("layer", out var l) ? l.GetString() : "";
                     var confidence = props.TryGetProperty("confidence", out var c) ? c.GetDouble() : 0;
-                    return confidence >= 0.6 && (layer == "address" || layer == "venue");
+                    return confidence >= 0.5 && (layer == "address" || layer == "venue");
                 })
-                .OrderByDescending(f => f.GetProperty("properties").GetProperty("confidence").GetDouble())
+                .OrderByDescending(f =>
+                {
+                    var props = f.GetProperty("properties");
+                    var confidence = props.TryGetProperty("confidence", out var c) ? c.GetDouble() : 0;
+                    var distance = props.TryGetProperty("distance", out var d) ? d.GetDouble() : double.MaxValue;
+
+                    var id = props.TryGetProperty("id", out var idProp) ? idProp.GetString() ?? "" : "";
+
+                    double priorityBoost = id switch
+                    {
+                        string s when s.StartsWith("node/") => 0.1,
+                        string s when s.StartsWith("way/") => 0.1,
+                        _ => 0.0
+                    };
+
+                    return confidence * 1000 + priorityBoost * 1000 - distance;
+                })
                 .FirstOrDefault();
 
             bestFeature = bestFeature.ValueKind != JsonValueKind.Undefined ? bestFeature : features[0];
@@ -83,9 +101,19 @@ namespace RoutingApp.API.Services
             var number = props.TryGetProperty("housenumber", out var n) ? n.GetString() : "";
             var city = props.TryGetProperty("locality", out var c) ? c.GetString() :
                        props.TryGetProperty("region", out var r) ? r.GetString() : "";
+            var label = props.TryGetProperty("label", out var lbl) ? lbl.GetString() : "";
 
-            var shortAddress = string.Join(", ", new[] { street, number, city }.Where(x => !string.IsNullOrWhiteSpace(x)));
-            var fullAddress = props.TryGetProperty("label", out var label) ? label.GetString() : shortAddress;
+            string shortAddress;
+            if (string.IsNullOrWhiteSpace(street) && string.IsNullOrWhiteSpace(number))
+            {
+                shortAddress = label;
+            }
+            else
+            {
+                shortAddress = string.Join(", ", new[] { street, number, city }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+
+            var fullAddress = !string.IsNullOrWhiteSpace(label) ? label : shortAddress;
 
             return new OrsSearchResponse
             {
@@ -95,6 +123,8 @@ namespace RoutingApp.API.Services
                 FullAddress = fullAddress
             };
         }
+
+
 
         public async Task<string?> GetRouteAsync(string payloadJson)
         {
