@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using RoutingApp.API.Data;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Data.Interceptors;
@@ -43,11 +44,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         );
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration.GetValue<string>("auth0:Authority");
+        options.Audience = builder.Configuration.GetValue<string>("auth0:Audience");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = "name"
+        };
+    });
+
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = options.DefaultPolicy;
 });
+
 
 //DeliveryPoint
 builder.Services.AddScoped<IDeliveryPointService, DeliveryPointService>();
