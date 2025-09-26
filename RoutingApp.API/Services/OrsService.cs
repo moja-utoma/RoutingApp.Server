@@ -19,6 +19,30 @@ namespace RoutingApp.API.Services
                       ?? throw new InvalidOperationException("API key not found");
         }
 
+        public async IAsyncEnumerable<double[]> StreamRouteAsync(string payloadJson)
+        {
+            var geoJson = await GetRouteAsync(payloadJson);
+            if (string.IsNullOrWhiteSpace(geoJson))
+                yield break;
+
+            using var doc = JsonDocument.Parse(geoJson);
+            var features = doc.RootElement.GetProperty("features");
+
+            foreach (var feature in features.EnumerateArray())
+            {
+                var geometry = feature.GetProperty("geometry");
+                if (geometry.GetProperty("type").GetString() != "LineString")
+                    continue;
+
+                var coords = geometry.GetProperty("coordinates");
+                foreach (var point in coords.EnumerateArray())
+                {
+                    yield return new[] { point[0].GetDouble(), point[1].GetDouble() };
+                }
+            }
+        }
+
+
         public async Task<OrsSearchResponse?> SearchAddressAsync(string query)
         {
             if (string.IsNullOrWhiteSpace(query)) return null;

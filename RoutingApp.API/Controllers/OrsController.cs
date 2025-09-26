@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RoutingApp.API.Services.Interfaces;
+using System.Text.Json;
 
 namespace RoutingApp.API.Controllers
 {
@@ -30,6 +31,35 @@ namespace RoutingApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("stream")]
+        public async Task StreamRoute([FromBody] object payload)
+        {
+            if (payload == null || string.IsNullOrWhiteSpace(payload.ToString()))
+            {
+                Response.StatusCode = 400;
+                await Response.WriteAsync("Payload is required.");
+                return;
+            }
+
+            Response.ContentType = "text/event-stream";
+
+            try
+            {
+                await foreach (var coord in _orsService.StreamRouteAsync(payload.ToString()!))
+                {
+                    var json = JsonSerializer.Serialize(new { lat = coord[1], lng = coord[0] });
+                    await Response.WriteAsync($"data: {json}\n\n");
+                    await Response.Body.FlushAsync();
+                    await Task.Delay(500); // simulate movement delay
+                }
+            }
+            catch (Exception ex)
+            {
+                await Response.WriteAsync($"data: {{ \"error\": \"{ex.Message}\" }}\n\n");
+            }
+        }
+
 
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string text)

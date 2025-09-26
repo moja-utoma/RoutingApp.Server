@@ -2,6 +2,7 @@
 using RoutingApp.API.Data.Configurations;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Data.Interceptors;
+using RoutingApp.API.Data.Seed;
 using RoutingApp.API.Models;
 using Route = RoutingApp.API.Data.Entities.Route;
 
@@ -39,6 +40,6 @@ namespace RoutingApp.API.Data
 
 				builder.Navigation(r=>r.Route).AutoInclude();
             });
-		}
+        }
 	}
 }

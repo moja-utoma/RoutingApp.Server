@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using RoutingApp.API.Data;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Data.Interceptors;
+using RoutingApp.API.Data.Seed;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Repositories;
 using RoutingApp.API.Repositories.Interfaces;
@@ -131,5 +132,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    RouteSeeder.Seed(context);
+}
 
 app.Run();
