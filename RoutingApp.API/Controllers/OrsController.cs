@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RoutingApp.API.Services;
 using RoutingApp.API.Services.Interfaces;
 using System.Text.Json;
 
@@ -9,10 +10,12 @@ namespace RoutingApp.API.Controllers
     public class OrsController : ControllerBase
     {
         private readonly IOrsService _orsService;
+        private readonly ILogger<OrsController> _logger;
 
-        public OrsController(IOrsService orsService)
+        public OrsController(IOrsService orsService, ILogger<OrsController> logger)
         {
             _orsService = orsService;
+            _logger = logger;
         }
 
         [HttpPost("route")]
@@ -32,33 +35,82 @@ namespace RoutingApp.API.Controllers
             }
         }
 
-        [HttpPost("stream")]
-        public async Task StreamRoute([FromBody] object payload)
+        //[HttpPost("stream/{routeId}")]
+        //public async Task StreamRoute(string routeId, [FromBody] object payload)
+        //{
+        //    if (string.IsNullOrWhiteSpace(routeId) || payload == null || string.IsNullOrWhiteSpace(payload.ToString()))
+        //    {
+        //        Response.StatusCode = 400;
+        //        await Response.WriteAsync("Route ID and payload are required.");
+        //        return;
+        //    }
+
+        //    Response.ContentType = "text/event-stream";
+        //    var cancellationToken = HttpContext.RequestAborted;
+
+        //    try
+        //    {
+        //        await foreach (var coord in _orsService.StreamRouteAsync(routeId, payload.ToString()!, cancellationToken))
+        //        {
+        //            var timestamp = DateTime.UtcNow;
+        //            var json = JsonSerializer.Serialize(new
+        //            {
+        //                routeId,
+        //                lat = coord[1],
+        //                lng = coord[0],
+        //                timestamp = timestamp.ToString("o")
+        //            });
+
+        //            var ssePayload = $"id: {timestamp:O}\ndata: {json}\n\n";
+
+        //            await Response.WriteAsync(ssePayload, cancellationToken);
+        //            await Response.Body.FlushAsync(cancellationToken);
+
+        //            _logger.LogInformation("Flushed SSE event for route {RouteId} at {Timestamp}: {Payload}", routeId, timestamp, json);
+        //            await Task.Delay(500, cancellationToken);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var errorJson = JsonSerializer.Serialize(new { error = ex.Message });
+        //        await Response.WriteAsync($"data: {errorJson}\n\n");
+        //    }
+        //}
+
+        [HttpPost("stream/{routeId}")]
+        public async Task StreamRoute(string routeId, [FromBody] object payload, [FromServices] IRouteStreamRegistry registry, CancellationToken cancellationToken)
         {
-            if (payload == null || string.IsNullOrWhiteSpace(payload.ToString()))
+            if (string.IsNullOrWhiteSpace(routeId) || payload == null || string.IsNullOrWhiteSpace(payload.ToString()))
             {
                 Response.StatusCode = 400;
-                await Response.WriteAsync("Payload is required.");
+                await Response.WriteAsync("Route ID and payload are required.");
                 return;
             }
 
             Response.ContentType = "text/event-stream";
+            //var cancellationToken = HttpContext.RequestAborted;
+
+            registry.StartRouteStream(routeId, payload.ToString()!, cancellationToken);
+            var channel = registry.GetOrCreateChannel(routeId);
+            var reader = channel.Reader;
 
             try
             {
-                await foreach (var coord in _orsService.StreamRouteAsync(payload.ToString()!))
+                while (await reader.WaitToReadAsync(cancellationToken))
                 {
-                    var json = JsonSerializer.Serialize(new { lat = coord[1], lng = coord[0] });
-                    await Response.WriteAsync($"data: {json}\n\n");
-                    await Response.Body.FlushAsync();
-                    await Task.Delay(500); // simulate movement delay
+                    while (reader.TryRead(out var ssePayload))
+                    {
+                        await Response.WriteAsync(ssePayload, cancellationToken);
+                        await Response.Body.FlushAsync(cancellationToken);
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                await Response.WriteAsync($"data: {{ \"error\": \"{ex.Message}\" }}\n\n");
+                _logger.LogInformation("Client disconnected from route {RouteId}", routeId);
             }
         }
+
 
 
         [HttpGet("search")]

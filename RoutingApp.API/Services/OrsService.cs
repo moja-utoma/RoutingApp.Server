@@ -1,6 +1,7 @@
 ﻿using RoutingApp.API.Models.Responses;
 using RoutingApp.API.Services.Interfaces;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -19,7 +20,10 @@ namespace RoutingApp.API.Services
                       ?? throw new InvalidOperationException("API key not found");
         }
 
-        public async IAsyncEnumerable<double[]> StreamRouteAsync(string payloadJson)
+        public async IAsyncEnumerable<double[]> StreamRouteAsync(
+     string routeId,
+     string payloadJson,
+     [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var geoJson = await GetRouteAsync(payloadJson);
             if (string.IsNullOrWhiteSpace(geoJson))
@@ -30,6 +34,8 @@ namespace RoutingApp.API.Services
 
             foreach (var feature in features.EnumerateArray())
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var geometry = feature.GetProperty("geometry");
                 if (geometry.GetProperty("type").GetString() != "LineString")
                     continue;
@@ -37,6 +43,7 @@ namespace RoutingApp.API.Services
                 var coords = geometry.GetProperty("coordinates");
                 foreach (var point in coords.EnumerateArray())
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     yield return new[] { point[0].GetDouble(), point[1].GetDouble() };
                 }
             }
@@ -147,8 +154,6 @@ namespace RoutingApp.API.Services
                 FullAddress = fullAddress
             };
         }
-
-
 
         public async Task<string?> GetRouteAsync(string payloadJson)
         {

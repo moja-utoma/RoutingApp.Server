@@ -88,6 +88,8 @@ builder.Services.AddScoped<IValidator<CreateRouteRequestDTO>, RouteValidator>();
 //Ors
 builder.Services.AddScoped<IOrsService, OrsService>();
 
+builder.Services.AddSingleton<IRouteStreamRegistry, RouteStreamRegistry>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -137,6 +139,7 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     RouteSeeder.Seed(context);
+    KyivCompactRouteSeeder.Seed(context);
 }
 
 app.Run();
