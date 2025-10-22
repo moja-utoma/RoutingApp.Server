@@ -1,16 +1,17 @@
 name: RoutingApp CI
 
 on:
-    push: 
-      branches:
-        - master
-     
+  push:
+    branches:
+      - master
+      - dev
+
 env:
   AZURE_WEBAPP_NAME: routing-app-ubuntu
-  AZURE_WEBAPP_PACKAGE_PATH: './RoutingApp.API/publish'
+  AZURE_WEBAPP_PACKAGE_PATH: "./RoutingApp.API/publish"
   DOTNET_VERSION: "8.x"
-  SOLUTION_PATH: 'RoutingApp.sln'
-  API_PROJECT_PATH: 'RoutingApp.API'
+  SOLUTION_PATH: "RoutingApp.sln"
+  API_PROJECT_PATH: "RoutingApp.API"
   PUBLISH_DIR: "./publish"
 
 jobs:
