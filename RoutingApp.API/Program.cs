@@ -44,25 +44,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .AddInterceptors(new SoftDeleteInterceptor())
         );
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration.GetValue<string>("auth0:Authority");
-        options.Audience = builder.Configuration.GetValue<string>("auth0:Audience");
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            NameClaimType = "name"
-        };
-    });
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.Authority = builder.Configuration.GetValue<string>("auth0:Authority");
+//        options.Audience = builder.Configuration.GetValue<string>("auth0:Audience");
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            NameClaimType = "name"
+//        };
+//    });
 
 
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = options.DefaultPolicy;
-});
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.FallbackPolicy = options.DefaultPolicy;
+//});
 
 
 //DeliveryPoint
@@ -133,7 +133,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/ping", () => Results.Ok("Pong! No auth required."))
+app.MapGet("/", () => Results.Ok("No auth required."))
    .AllowAnonymous();
 
 app.MapControllers();
