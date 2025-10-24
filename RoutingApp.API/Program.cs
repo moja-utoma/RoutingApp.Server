@@ -90,13 +90,12 @@ builder.Services.AddScoped<IOrsService, OrsService>();
 
 builder.Services.AddSingleton<IRouteStreamRegistry, RouteStreamRegistry>();
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200")
+            policy.WithOrigins("http://localhost:4200", "https://routing-app-ui-win.azurewebsites.net")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
