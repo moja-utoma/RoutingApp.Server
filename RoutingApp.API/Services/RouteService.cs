@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
+using RoutingApp.API.Models.Messaging;
 using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.API.Models.ThirdParty;
 using RoutingApp.API.Repositories.Interfaces;
@@ -19,15 +20,19 @@ namespace RoutingApp.API.Services
         private readonly IPointRepository<DeliveryPoint> _deliveryPointRepository;
         private readonly IPointRepository<Warehouse> _warehouseRepository;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IQueuePublisherService _queueService;
 
         public RouteService(IRouteRepository routeRepository,
         IPointRepository<DeliveryPoint> deliveryPointRepository,
-        IPointRepository<Warehouse> warehouseRepository, IHttpClientFactory httpClientFactory)
+        IPointRepository<Warehouse> warehouseRepository, 
+        IHttpClientFactory httpClientFactory, 
+        IQueuePublisherService queueService)
         {
             _routeRepository = routeRepository;
             _deliveryPointRepository = deliveryPointRepository;
             _warehouseRepository = warehouseRepository;
             _httpClientFactory = httpClientFactory;
+            _queueService = queueService;
         }
 
         public async Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request)
@@ -124,74 +129,106 @@ namespace RoutingApp.API.Services
             return EntityToModel.CreateModelFromRoute(entity);
         }
 
-        public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
+        public async Task<RouteResponseDTO> CalculateRouteAsync(int id)
         {
             var route = await _routeRepository.GetByIdAsync(id);
             if (route == null)
-                throw new Exception("Not found");
+                throw new Exception("Route not found");
 
-            var vehicles = route.Warehouses
-                .Where(w => w.Vehicles != null)
-                .SelectMany(w => w.Vehicles)
-                .Select(v => new VehicleForCalculationDTO
-                {
-                    Id = v.Id,
-                    Name = v.Name,
-                    Capacity = v.Capacity,
-                    Warehouse = v.Warehouse.Id
-                })
-                .ToList();
+            // Set job state
+            route.Status = "Pending";
+            route.UpdatedAt = DateTime.UtcNow;
+            route.CorrelationId = Guid.NewGuid().ToString();
 
+            await _routeRepository.SaveChangesAsync();
 
-            var exportDto = new RouteCalculationRequest
+            // Create queue message
+            var jobMessage = new RouteJobMessage
             {
-                Id = route.Id,
-                Warehouses = route.Warehouses.Select(w => new WarehouseForCalculationDTO
-                {
-                    Id = w.Id,
-                    Name = w.Name,
-                    Latitude = w.Latitude,
-                    Longitude = w.Longitude
-                }).ToList(),
-                Vehicles = vehicles,
-                Points = route.DeliveryPoints.Select(p => new DeliveryPointForCalculationDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Weight = p.Weight,
-                    Latitude = p.Latitude,
-                    Longitude = p.Longitude
-                }).ToList()
+                RouteId = id,
+                CorrelationId = route.CorrelationId,
+                Timestamp = DateTime.UtcNow
             };
 
-            var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", exportDto);
-            //var jspnstring = await response.Content.ReadAsStringAsync();
+            // Enqueue message ✅
+            await _queueService.PublishRouteJobAsync(jobMessage);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonString = await response.Content.ReadAsStringAsync();
-
-                // Save `id` and `jsonString` to DB
-                var result = await _routeRepository.SaveCalculatedRoute(id, jsonString);
-                await _routeRepository.SaveChangesAsync();
-                return result;
-            }
-            else
-            {
-                // Handle error
-                throw new Exception("error");
-            }
-
-            //if (response.IsSuccessStatusCode)
-            //{
-            //	var jsonString = await response.Content.ReadAsStringAsync();
-            //	var result = JsonSerializer.Deserialize<RouteCalculationResponse>(jsonString, new JsonSerializerOptions
-            //	{
-            //		PropertyNameCaseInsensitive = true
-            //	});
-            //}
-
+            return EntityToModel.CreateModelFromRoute(route);
         }
+
+
+        //public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
+        //{
+        //    var route = await _routeRepository.GetByIdAsync(id);
+        //    if (route == null)
+        //        throw new Exception("Not found");
+
+        //    var vehicles = route.Warehouses
+        //        .Where(w => w.Vehicles != null)
+        //        .SelectMany(w => w.Vehicles)
+        //        .Select(v => new VehicleForCalculationDTO
+        //        {
+        //            Id = v.Id,
+        //            Name = v.Name,
+        //            Capacity = v.Capacity,
+        //            Warehouse = v.Warehouse.Id
+        //        })
+        //        .ToList();
+
+
+        //    var exportDto = new RouteCalculationRequest
+        //    {
+        //        Id = route.Id,
+        //        Warehouses = route.Warehouses.Select(w => new WarehouseForCalculationDTO
+        //        {
+        //            Id = w.Id,
+        //            Name = w.Name,
+        //            Latitude = w.Latitude,
+        //            Longitude = w.Longitude
+        //        }).ToList(),
+        //        Vehicles = vehicles,
+        //        Points = route.DeliveryPoints.Select(p => new DeliveryPointForCalculationDTO
+        //        {
+        //            Id = p.Id,
+        //            Name = p.Name,
+        //            Weight = p.Weight,
+        //            Latitude = p.Latitude,
+        //            Longitude = p.Longitude
+        //        }).ToList()
+        //    };
+
+        //    var httpClient = _httpClientFactory.CreateClient();
+        //    var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", exportDto);
+        //    //var jspnstring = await response.Content.ReadAsStringAsync();
+
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        var jsonString = await response.Content.ReadAsStringAsync();
+
+        //        route.Status = "Active";
+        //        route.UpdatedAt = DateTime.UtcNow;
+        //        route.CorrelationId = Guid.NewGuid().ToString();
+
+        //        // Save `id` and `jsonString` to DB
+        //        var result = await _routeRepository.SaveCalculatedRoute(id, jsonString);
+        //        await _routeRepository.SaveChangesAsync();
+        //        return result;
+        //    }
+        //    else
+        //    {
+        //        // Handle error
+        //        throw new Exception("error");
+        //    }
+
+        //    //if (response.IsSuccessStatusCode)
+        //    //{
+        //    //	var jsonString = await response.Content.ReadAsStringAsync();
+        //    //	var result = JsonSerializer.Deserialize<RouteCalculationResponse>(jsonString, new JsonSerializerOptions
+        //    //	{
+        //    //		PropertyNameCaseInsensitive = true
+        //    //	});
+        //    //}
+
+        //}
     }
 }

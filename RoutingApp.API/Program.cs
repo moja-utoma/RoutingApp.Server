@@ -13,6 +13,7 @@ using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
+using Azure.Messaging.ServiceBus;
 using Route = RoutingApp.API.Data.Entities.Route;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +102,16 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
+
+
+builder.Services.AddSingleton<ServiceBusClient>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var connString = config["ServiceBus:ConnectionString"];
+    return new ServiceBusClient(connString);
+});
+
+builder.Services.AddScoped<IQueuePublisherService, QueuePublisherService>();
 
 var app = builder.Build();
 
