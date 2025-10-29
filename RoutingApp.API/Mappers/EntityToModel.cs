@@ -84,6 +84,7 @@ namespace RoutingApp.API.Mappers
             {
                 Id = route.Id,
                 Name = route.Name,
+                
                 DeliveryPointsQuantity = route.DeliveryPoints.Count(),
                 WarehouseNames = route.Warehouses.Select(w => w.Name)
             };
@@ -100,6 +101,8 @@ namespace RoutingApp.API.Mappers
             {
                 Id = route.Id,
                 Name = route.Name,
+                Status= route.Status,
+                UpdatedAt= route.UpdatedAt,
                 Warehouses = route.Warehouses.Select(CreateModelFromWarehouse),
                 DeliveryPoints = route.DeliveryPoints.Select(CreateModelFromDeliveryPoint),
                 CalculatedRoute = calc != null ?

@@ -7,6 +7,10 @@ namespace RoutingApp.API.Models.Responses.Routes
     {
         public int Id { get; set; }
         public required string Name { get; set; }
+
+        public string Status { get; set; } = "Pending";
+        public DateTime? UpdatedAt { get; set; }
+        public string? CorrelationId { get; set; }
         public required IEnumerable<WarehouseResponseDTO> Warehouses{ get; set; }
         public required IEnumerable<DeliveryPointResponseDTO> DeliveryPoints { get; set; }
         public CalculatedRouteDto? CalculatedRoute { get; set; }
