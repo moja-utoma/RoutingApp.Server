@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RoutingApp.API.Data;
-using RoutingApp.API.Repositories;
-using RoutingApp.API.Repositories.Interfaces;
+using RoutingApp.Data;
+using RoutingApp.Data.Repositories;
+using RoutingApp.Data.Repositories.Interfaces;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(config =>

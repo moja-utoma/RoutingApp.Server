@@ -21,6 +21,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RoutingApp.Data\RoutingApp.Data.csproj" />
+    <ProjectReference Include="..\RoutingApp.Shared\RoutingApp.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -31,8 +35,5 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\RoutingApp.API\RoutingApp.API.csproj" />
   </ItemGroup>
 </Project>

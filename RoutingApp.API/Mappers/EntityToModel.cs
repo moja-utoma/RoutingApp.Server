@@ -1,10 +1,10 @@
-﻿using RoutingApp.API.Data.Entities;
+﻿using RoutingApp.Data.Entities;
 using RoutingApp.API.Models.Responses.DeliveryPoints;
 using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.API.Models.Responses.Vehicles;
 using RoutingApp.API.Models.Responses.Warehouse;
 using RoutingApp.API.Models.Responses.Warehouses;
-using Route = RoutingApp.API.Data.Entities.Route;
+using Route = RoutingApp.Data.Entities.Route;
 
 namespace RoutingApp.API.Mappers
 {

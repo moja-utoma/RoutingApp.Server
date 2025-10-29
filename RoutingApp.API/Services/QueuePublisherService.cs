@@ -1,5 +1,5 @@
-﻿using RoutingApp.API.Models.Messaging;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
+using RoutingApp.Shared.Messaging;
 using System.Text.Json;
 
 namespace RoutingApp.API.Services

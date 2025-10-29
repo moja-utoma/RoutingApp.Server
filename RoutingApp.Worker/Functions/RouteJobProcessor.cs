@@ -2,9 +2,9 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using RoutingApp.API.Models.Messaging;
-using RoutingApp.API.Repositories.Interfaces;
-using RoutingApp.API.Data.Entities;
+using RoutingApp.Data.Entities;
+using RoutingApp.Data.Repositories.Interfaces;
+using RoutingApp.Shared.Messaging;
 
 namespace RoutingApp.Worker.Functions
 {
@@ -56,7 +56,7 @@ namespace RoutingApp.Worker.Functions
 
             await _routeRepository.SaveChangesAsync();
 
-            _logger.LogInformation($"Route {job.RouteId} updated to Completed ✅");
+            _logger.LogInformation($"Route {job.RouteId} updated to Completed");
         }
     }
 }

@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.Test", "RoutingA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.Worker", "RoutingApp.Worker\RoutingApp.Worker.csproj", "{142257A9-94E9-4BD1-9277-24A9DCADBA64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.Data", "RoutingApp.Data\RoutingApp.Data.csproj", "{EBE7F105-37D2-4129-AC9E-624E206C7A61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingApp.Shared", "RoutingApp.Shared\RoutingApp.Shared.csproj", "{B562CAA4-22A9-4A81-BD70-4FAACCC3CE32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{142257A9-94E9-4BD1-9277-24A9DCADBA64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{142257A9-94E9-4BD1-9277-24A9DCADBA64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{142257A9-94E9-4BD1-9277-24A9DCADBA64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBE7F105-37D2-4129-AC9E-624E206C7A61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBE7F105-37D2-4129-AC9E-624E206C7A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBE7F105-37D2-4129-AC9E-624E206C7A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBE7F105-37D2-4129-AC9E-624E206C7A61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B562CAA4-22A9-4A81-BD70-4FAACCC3CE32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B562CAA4-22A9-4A81-BD70-4FAACCC3CE32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B562CAA4-22A9-4A81-BD70-4FAACCC3CE32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B562CAA4-22A9-4A81-BD70-4FAACCC3CE32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,8 +1,8 @@
-﻿using RoutingApp.API.Data.Entities;
+﻿using RoutingApp.Data.Entities;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Models.Request;
-using Route = RoutingApp.API.Data.Entities.Route;
+using Route = RoutingApp.Data.Entities.Route;
 
 namespace RoutingApp.API.Mappers
 {

@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
-using RoutingApp.API.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.Request;
 using RoutingApp.API.Models.Responses.Vehicles;
-using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
+using RoutingApp.Data.Entities;
+using RoutingApp.Data.Repositories.Interfaces;
+
 
 namespace RoutingApp.API.Services
 {

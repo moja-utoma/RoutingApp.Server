@@ -1,16 +1,16 @@
 ﻿using Azure.Core;
 using Microsoft.EntityFrameworkCore;
-using RoutingApp.API.Data.Entities;
+using RoutingApp.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Models.Messaging;
 using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.API.Models.ThirdParty;
-using RoutingApp.API.Repositories.Interfaces;
+using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
 using System.Net.Http;
 using System.Text.Json;
-using Route = RoutingApp.API.Data.Entities.Route;
+using Route = RoutingApp.Data.Entities.Route;
+using RoutingApp.Shared.Messaging;
 
 namespace RoutingApp.API.Services
 {
@@ -150,7 +150,7 @@ namespace RoutingApp.API.Services
                 Timestamp = DateTime.UtcNow
             };
 
-            // Enqueue message ✅
+            // Enqueue message
             await _queueService.PublishRouteJobAsync(jobMessage);
 
             return EntityToModel.CreateModelFromRoute(route);
