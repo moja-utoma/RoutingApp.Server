@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RoutingApp.API.Data;
-using RoutingApp.API.Data.Entities;
+using RoutingApp.Data;
+using RoutingApp.Data.Entities;
 using RoutingApp.API.Models;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services.Interfaces;
+using RoutingApp.Data.Repositories;
 
 namespace RoutingApp.API.Controllers
 {

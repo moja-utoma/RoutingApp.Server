@@ -3,17 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
-using RoutingApp.API.Data;
-using RoutingApp.API.Data.Entities;
-using RoutingApp.API.Data.Interceptors;
-using RoutingApp.API.Data.Seed;
 using RoutingApp.API.Models.DTO;
-using RoutingApp.API.Repositories;
-using RoutingApp.API.Repositories.Interfaces;
 using RoutingApp.API.Services;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
-using Route = RoutingApp.API.Data.Entities.Route;
+using Azure.Messaging.ServiceBus;
+using Route = RoutingApp.Data.Entities.Route;
+using RoutingApp.Data;
+using RoutingApp.Data.Interceptors;
+using RoutingApp.Data.Entities;
+using RoutingApp.Data.Repositories.Interfaces;
+using RoutingApp.Data.Repositories;
+using RoutingApp.Data.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,6 +102,16 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
+
+
+builder.Services.AddSingleton<ServiceBusClient>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var connString = config["ServiceBus:ConnectionString"];
+    return new ServiceBusClient(connString);
+});
+
+builder.Services.AddScoped<IQueuePublisherService, QueuePublisherService>();
 
 var app = builder.Build();
 

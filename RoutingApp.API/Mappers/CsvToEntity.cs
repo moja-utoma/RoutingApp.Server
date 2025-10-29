@@ -1,5 +1,5 @@
 using CsvHelper.Configuration;
-using RoutingApp.API.Data.Entities;
+using RoutingApp.Data.Entities;
 
 public sealed class WarehouseMap : ClassMap<Warehouse>
 {
