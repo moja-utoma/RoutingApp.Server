@@ -22,7 +22,7 @@ namespace RoutingApp.API.Services
         private readonly IPointRepository<DeliveryPoint> _repository;
         private readonly IFileStorageService _fileStorageService;
 
-        public DeliveryPointService(IPointRepository<DeliveryPoint> repository, AzureBlobStorageService storageService)
+        public DeliveryPointService(IPointRepository<DeliveryPoint> repository, IFileStorageService storageService)
         {
             _repository = repository;
             _fileStorageService = storageService;
