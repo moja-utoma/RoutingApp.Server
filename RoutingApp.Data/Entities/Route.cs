@@ -8,7 +8,7 @@
 		public required IEnumerable<Warehouse> Warehouses { get; set; }
 		public required IEnumerable<DeliveryPoint> DeliveryPoints { get; set; }
 		//public required IEnumerable<Vehicle> Vehicles { get; set; }
-		public IEnumerable<CalculatedRoute>? CalculatedRoutes { get; set; }
+		public ICollection<CalculatedRoute>? CalculatedRoutes { get; set; }
 
         public string Status { get; set; } = "Pending"; // Pending, Processing, Completed, Failed
         public DateTime? UpdatedAt { get; set; }

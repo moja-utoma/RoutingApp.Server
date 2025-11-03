@@ -53,7 +53,12 @@ namespace RoutingApp.Worker.Functions
 
             route.Status = "Completed";
             route.UpdatedAt = DateTime.UtcNow;
-            route.CalculatedRoutes = (route.CalculatedRoutes ?? new List<CalculatedRoute>()).Append(calc);
+			if (route.CalculatedRoutes == null)
+			{
+				route.CalculatedRoutes = new List<CalculatedRoute>();
+			}
+
+			route.CalculatedRoutes.Add(calc);
 
 			try
 			{
