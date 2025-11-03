@@ -129,7 +129,7 @@ namespace RoutingApp.API.Services
             return EntityToModel.CreateModelFromRoute(entity);
         }
 
-        public async Task<RouteResponseDTO> CalculateRouteAsync(int id)
+        public async Task<RouteDetailsResponseDTO> CalculateRouteAsync(int id)
         {
             var route = await _routeRepository.GetByIdAsync(id);
             if (route == null)
@@ -153,7 +153,7 @@ namespace RoutingApp.API.Services
             // Enqueue message
             await _queueService.PublishRouteJobAsync(jobMessage);
 
-            return EntityToModel.CreateModelFromRoute(route);
+            return EntityToModel.CreateModelForDetailsFromRoute(route);
         }
 
 

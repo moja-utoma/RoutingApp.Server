@@ -24,9 +24,10 @@ namespace RoutingApp.Worker.Functions
             [ServiceBusTrigger("%ServiceBus:QueueName%", Connection = "ServiceBus:ConnectionString")]
             ServiceBusReceivedMessage message)
         {
-            var body = message.Body.ToString();
-            var job = JsonSerializer.Deserialize<RouteJobMessage>(body);
-            if (job == null)
+			var body = message.Body.ToArray();
+			var job = JsonSerializer.Deserialize<RouteJobMessage>(body);
+
+			if (job == null)
             {
                 _logger.LogError("Invalid message format");
                 return;
@@ -54,7 +55,15 @@ namespace RoutingApp.Worker.Functions
             route.UpdatedAt = DateTime.UtcNow;
             route.CalculatedRoutes = (route.CalculatedRoutes ?? new List<CalculatedRoute>()).Append(calc);
 
-            await _routeRepository.SaveChangesAsync();
+			try
+			{
+				await _routeRepository.SaveChangesAsync();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Unhandled exception while processing route job {job?.RouteId}");
+				//throw; 
+			}
 
             _logger.LogInformation($"Route {job.RouteId} updated to Completed");
         }
