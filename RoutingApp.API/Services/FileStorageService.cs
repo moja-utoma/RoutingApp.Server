@@ -15,8 +15,8 @@ namespace RoutingApp.API.Services
 		public AzureBlobStorageService(IConfiguration configuration)
 		{
 			_configuration = configuration;
-			var connectionString = _configuration["AzureBlobStorage:ConnectionString"];
-			var containerName = _configuration["AzureBlobStorage:ContainerName"];
+			var connectionString = _configuration["BlobStorage:ConnectionString"];
+			var containerName = _configuration["BlobStorage:ContainerName"];
 			_containerClient = new BlobContainerClient(connectionString, containerName);
 		}
 
