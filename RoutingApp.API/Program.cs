@@ -89,6 +89,8 @@ builder.Services.AddScoped<IValidator<CreateRouteRequestDTO>, RouteValidator>();
 //Ors
 builder.Services.AddScoped<IOrsService, OrsService>();
 
+builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+
 builder.Services.AddSingleton<IRouteStreamRegistry, RouteStreamRegistry>();
 
 builder.Services.AddCors(options =>

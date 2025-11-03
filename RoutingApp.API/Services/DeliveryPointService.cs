@@ -20,10 +20,12 @@ namespace RoutingApp.API.Services
     public class DeliveryPointService : IDeliveryPointService
     {
         private readonly IPointRepository<DeliveryPoint> _repository;
+        private readonly IFileStorageService _fileStorageService;
 
-        public DeliveryPointService(IPointRepository<DeliveryPoint> repository)
+        public DeliveryPointService(IPointRepository<DeliveryPoint> repository, AzureBlobStorageService storageService)
         {
             _repository = repository;
+            _fileStorageService = storageService;
         }
 
         public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
@@ -125,9 +127,15 @@ namespace RoutingApp.API.Services
             return EntityToModel.CreateModelFromDeliveryPoint(entity);
         }
 
-        public async Task<List<string>> ImportCSV(IFormFile file)
+        public async Task<string> SaveRawFileAsync(IFormFile file)
         {
 
+			return await _fileStorageService.UploadFileAsync(file);
+		}
+
+
+		public async Task<List<string>> ImportCSV(IFormFile file)
+        {
             if (file == null || file.Length == 0)
             {
                 throw new Exception("File is empty");

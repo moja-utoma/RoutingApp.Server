@@ -64,7 +64,7 @@ namespace RoutingApp.API.Controllers
 		{
 			try
 			{
-				var result = await _pointService.ImportCSV(file);
+				var result = await _pointService.SaveRawFileAsync(file);
 				return Ok(result);
 			}
 			catch (Exception e)
