@@ -12,8 +12,9 @@ namespace RoutingApp.Data
 		public DbSet<Warehouse> Warehouses { get; set; }
 		public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<CalculatedRoute> CalculatedRoutes { get; set; }
+		public DbSet<FileRecord> FileRecords { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -37,6 +38,11 @@ namespace RoutingApp.Data
 
 				builder.Navigation(r=>r.Route).AutoInclude();
             });
+
+			modelBuilder.Entity<FileRecord>(builder => {
+				builder.ToTable("FileRecords");
+				builder.HasKey(cr => cr.Id);
+			});
         }
 	}
 }

@@ -32,18 +32,14 @@ builder.Logging.AddDebug();
 builder.Services.AddHttpClient();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options
-        .UseSqlServer(builder.Configuration.GetConnectionString("RoutingDB")
-        //, sqlServerOptionsAction: sqlOptions =>
-        //{
-        //    sqlOptions.EnableRetryOnFailure(
-        //        maxRetryCount: 3,
-        //        maxRetryDelay: TimeSpan.FromSeconds(30),
-        //        errorNumbersToAdd: null);
-        //}
-        )
-        .AddInterceptors(new SoftDeleteInterceptor())
-        );
+	options
+		.UseSqlServer(
+			builder.Configuration.GetConnectionString("RoutingDB"),
+			sql => sql.MigrationsAssembly("RoutingApp.Data")
+		)
+		.AddInterceptors(new SoftDeleteInterceptor())
+);
+
 
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //    .AddJwtBearer(options =>
@@ -90,27 +86,28 @@ builder.Services.AddScoped<IValidator<CreateRouteRequestDTO>, RouteValidator>();
 builder.Services.AddScoped<IOrsService, OrsService>();
 
 builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+builder.Services.AddScoped<IRepository<FileRecord>, Repository<FileRecord>>();
 
 builder.Services.AddSingleton<IRouteStreamRegistry, RouteStreamRegistry>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200", "https://routing-app-ui-win.azurewebsites.net")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+	options.AddPolicy("AllowAngular",
+		policy =>
+		{
+			policy.WithOrigins("http://localhost:4200", "https://routing-app-ui-win.azurewebsites.net")
+				  .AllowAnyHeader()
+				  .AllowAnyMethod()
+				  .AllowCredentials();
+		});
 });
 
 
 builder.Services.AddSingleton<ServiceBusClient>(sp =>
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connString = config["ServiceBus:ConnectionString"];
-    return new ServiceBusClient(connString);
+	var config = sp.GetRequiredService<IConfiguration>();
+	var connString = config["ServiceBus:ConnectionString"];
+	return new ServiceBusClient(connString);
 });
 
 builder.Services.AddScoped<IQueuePublisherService, QueuePublisherService>();
@@ -152,9 +149,9 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    RouteSeeder.Seed(context);
-    KyivCompactRouteSeeder.Seed(context);
+	var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+	RouteSeeder.Seed(context);
+	KyivCompactRouteSeeder.Seed(context);
 }
 
 app.Run();

@@ -1,10 +1,11 @@
 ﻿using Azure.Storage.Blobs;
+using RoutingApp.API.Models;
 
 namespace RoutingApp.API.Services
 {
 	public interface IFileStorageService
 	{
-		Task<string> UploadFileAsync(IFormFile file, string folder = null);
+		Task<FileUploadResult> UploadFileAsync(IFormFile file, string folder = null);
 		Task<(Stream stream, string contentType, string fileName)> DownloadFileAsync(string blobName);
 	}
 
@@ -43,16 +44,10 @@ namespace RoutingApp.API.Services
 		}
 
 
-		public async Task<string> UploadFileAsync(IFormFile file, string folder = null)
+		public async Task<FileUploadResult> UploadFileAsync(IFormFile file, string folder = null)
 		{
 			if (file == null || file.Length == 0)
 				throw new Exception("File is empty");
-
-			var allowedExtensions = new[] { ".csv" };
-			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-			if (!allowedExtensions.Contains(extension))
-				throw new Exception("Not an acceptable file format, please upload a .csv file");
 
 			await _containerClient.CreateIfNotExistsAsync();
 
@@ -63,9 +58,15 @@ namespace RoutingApp.API.Services
 			var blobClient = _containerClient.GetBlobClient(blobName);
 
 			using var stream = file.OpenReadStream();
-			await blobClient.UploadAsync(stream, overwrite: true);
+			var response = await blobClient.UploadAsync(stream, overwrite: true);
 
-			return blobClient.Uri.ToString();
+			return new FileUploadResult
+			{
+				BlobName = blobName,
+				Size = file.Length,
+				ContentType = file.ContentType ?? "application/octet-stream",
+				Version = response.Value.VersionId
+			};
 		}
 	}
 

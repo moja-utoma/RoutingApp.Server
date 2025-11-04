@@ -19,17 +19,19 @@ using Azure.Storage.Blobs.Models;
 namespace RoutingApp.API.Services
 {
     public class DeliveryPointService : IDeliveryPointService
-    {
-        private readonly IPointRepository<DeliveryPoint> _repository;
+	{
+		private readonly IRepository<FileRecord> _fileRepository;
+		private readonly IPointRepository<DeliveryPoint> _repository;
         private readonly IFileStorageService _fileStorageService;
 
-        public DeliveryPointService(IPointRepository<DeliveryPoint> repository, IFileStorageService storageService)
-        {
-            _repository = repository;
-            _fileStorageService = storageService;
-        }
+        public DeliveryPointService(IPointRepository<DeliveryPoint> repository, IFileStorageService storageService, IRepository<FileRecord> fileRepository)
+		{
+			_repository = repository;
+			_fileStorageService = storageService;
+			_fileRepository = fileRepository;
+		}
 
-        public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
+		public async Task<PaginatedResponseDTO<DeliveryPointResponseDTO>> GetAllPointsAsync(QueryParametersModel filters)
         {
             var query = _repository.GetAll();
             query = query.ApplySearch(filters.SearchString);
@@ -128,11 +130,28 @@ namespace RoutingApp.API.Services
             return EntityToModel.CreateModelFromDeliveryPoint(entity);
         }
 
-        public async Task<string> SaveRawFileAsync(IFormFile file)
+        public async Task<FileUploadResult> SaveRawFileAsync(IFormFile file)
         {
+			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+			if (extension != ".csv")
+				throw new Exception("Only .csv files are allowed");
 
-			return await _fileStorageService.UploadFileAsync(file);
+			var result = await _fileStorageService.UploadFileAsync(file);
+
+			var record = new FileRecord
+			{
+				BlobName = result.BlobName,
+				ContentType = result.ContentType,
+				Size = result.Size,
+				Version = result.Version
+			};
+
+            await _fileRepository.AddAsync(record);
+            await _fileRepository.SaveChangesAsync();
+
+            return result;
 		}
+		
 
 		public async Task<(Stream stream, string contentType, string fileName)> GetRawFileAsync(string blobName)
 		{

@@ -3,12 +3,13 @@ name: DB Deploy on Migration Change
 on:
   push:
     paths:
-      - 'RoutingApp.API/Migrations/*.cs'
-      - 'RoutingApp.API/Migrations/*.sql'
+      - 'RoutingApp.Data/Migrations/*.cs'
+      - 'RoutingApp.Data/Migrations/*.sql'
 
 env:
   DOTNET_VERSION: "8.x"
   API_PROJECT_PATH: "RoutingApp.API"
+  DATA_PROJECT_PATH: "RoutingApp.Data"
 
 jobs:
   deploy-db:
@@ -31,4 +32,4 @@ jobs:
         env:
           AZURE_SQL_CONNECTION_STRING: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
         run: |
-          dotnet ef database update --project ${{ env.API_PROJECT_PATH }} --connection "$AZURE_SQL_CONNECTION_STRING"
+          dotnet ef database update --project ${{ env.DATA_PROJECT_PATH }} --startup-project ${{ env.API_PROJECT_PATH }} --connection "$AZURE_SQL_CONNECTION_STRING"

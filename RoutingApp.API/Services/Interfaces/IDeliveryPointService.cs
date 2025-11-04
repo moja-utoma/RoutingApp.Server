@@ -14,7 +14,7 @@ namespace RoutingApp.API.Services.Interfaces
 		Task<List<string>> ImportCSV(IFormFile file);
 		Task<DeliveryPointResponseDTO> CreatePointAsync(CreateDeliveryPointRequestDTO point);
 		Task<DeliveryPointResponseDTO> EditAsync(EditDeliveryPointRequestDTO request);
-		Task<string> SaveRawFileAsync(IFormFile file);
+		Task<FileUploadResult> SaveRawFileAsync(IFormFile file);
 		Task<(Stream stream, string contentType, string fileName)> GetRawFileAsync(string blobName);
 	}
 }
