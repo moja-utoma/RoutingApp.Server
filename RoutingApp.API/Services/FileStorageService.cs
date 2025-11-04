@@ -5,6 +5,7 @@ namespace RoutingApp.API.Services
 	public interface IFileStorageService
 	{
 		Task<string> UploadFileAsync(IFormFile file, string folder = null);
+		Task<(Stream stream, string contentType, string fileName)> DownloadFileAsync(string blobName);
 	}
 
 	public class AzureBlobStorageService : IFileStorageService
@@ -19,6 +20,28 @@ namespace RoutingApp.API.Services
 			var containerName = _configuration["BlobStorage:ContainerName"];
 			_containerClient = new BlobContainerClient(connectionString, containerName);
 		}
+
+		public async Task<(Stream stream, string contentType, string fileName)> DownloadFileAsync(string blobName)
+		{
+			if (string.IsNullOrWhiteSpace(blobName))
+				throw new ArgumentException("Blob name is required");
+
+			var blobClient = _containerClient.GetBlobClient(blobName);
+
+			if (!await blobClient.ExistsAsync())
+				throw new FileNotFoundException($"Blob '{blobName}' not found");
+
+			var properties = await blobClient.GetPropertiesAsync();
+			var stream = new MemoryStream();
+			await blobClient.DownloadToAsync(stream);
+			stream.Position = 0;
+
+			var contentType = properties.Value.ContentType ?? "application/octet-stream";
+			var fileName = Path.GetFileName(blobName);
+
+			return (stream, contentType, fileName);
+		}
+
 
 		public async Task<string> UploadFileAsync(IFormFile file, string folder = null)
 		{

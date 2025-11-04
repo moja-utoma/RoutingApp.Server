@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using RoutingApp.Data.Repositories;
+using Azure.Storage.Blobs.Models;
 
 namespace RoutingApp.API.Services
 {
@@ -133,6 +134,10 @@ namespace RoutingApp.API.Services
 			return await _fileStorageService.UploadFileAsync(file);
 		}
 
+		public async Task<(Stream stream, string contentType, string fileName)> GetRawFileAsync(string blobName)
+		{
+			return await _fileStorageService.DownloadFileAsync(blobName);
+		}
 
 		public async Task<List<string>> ImportCSV(IFormFile file)
         {

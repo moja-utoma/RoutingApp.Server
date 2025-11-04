@@ -73,6 +73,24 @@ namespace RoutingApp.API.Controllers
 			}
 		}
 
+		[HttpGet("File/{blobName}")]
+		public async Task<IActionResult> DownloadFile(string blobName)
+		{
+			try
+			{
+				var (stream, contentType, fileName) = await _pointService.GetRawFileAsync(blobName);
+				return File(stream, contentType, fileName);
+			}
+			catch (FileNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> Delete(int id)
 		{
