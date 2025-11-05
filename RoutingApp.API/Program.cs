@@ -75,6 +75,8 @@ builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IRepository<Route>, Repository<Route>>();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 
+builder.Services.AddScoped<ICalculatedRouteRepository, CalculatedRouteRepository>();
+
 //Vehicle
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();

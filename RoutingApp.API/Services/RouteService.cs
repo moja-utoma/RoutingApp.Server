@@ -7,6 +7,7 @@ using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.API.Models.ThirdParty;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.Data.Entities;
+using RoutingApp.Data.Repositories;
 using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.Shared.Messaging;
 using System.Net.Http;
@@ -22,18 +23,21 @@ namespace RoutingApp.API.Services
         private readonly IPointRepository<Warehouse> _warehouseRepository;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IQueuePublisherService _queueService;
+		private readonly ICalculatedRouteRepository _calcRepository;
 
-        public RouteService(IRouteRepository routeRepository,
+		public RouteService(IRouteRepository routeRepository,
         IPointRepository<DeliveryPoint> deliveryPointRepository,
         IPointRepository<Warehouse> warehouseRepository, 
         IHttpClientFactory httpClientFactory, 
-        IQueuePublisherService queueService)
+        IQueuePublisherService queueService,
+		ICalculatedRouteRepository calcRepository)
         {
             _routeRepository = routeRepository;
             _deliveryPointRepository = deliveryPointRepository;
             _warehouseRepository = warehouseRepository;
             _httpClientFactory = httpClientFactory;
             _queueService = queueService;
+            _calcRepository = calcRepository;
         }
 
         public async Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request)
@@ -130,7 +134,7 @@ namespace RoutingApp.API.Services
             return EntityToModel.CreateModelFromRoute(entity);
         }
 
-        public async Task<RouteDetailsResponseDTO> CalculateRouteAsync(int id)
+        public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
         {
             var route = await _routeRepository.GetByIdAsync(id);
             if (route == null)
@@ -160,8 +164,14 @@ namespace RoutingApp.API.Services
 			if (reply == null)
 				throw new TimeoutException("No reply received for route calculation.");
 
-			var updatedRoute = await _routeRepository.GetByIdAsync(id);
-			return EntityToModel.CreateModelForDetailsFromRoute(updatedRoute);
+			var calculatedRoute = await _calcRepository.GetCalculatedRouteByRouteIdAsync(id);
+			return new CalculatedRouteDto
+			{
+				Id = calculatedRoute.Id,
+				RouteId = calculatedRoute.Route.Id,
+				Calculation = calculatedRoute.Calculation,
+				CreatedAt = calculatedRoute.CreatedAt
+			};
 		}
 
 
