@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using RoutingApp.Data.Entities;
 using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.Shared.Messaging;
+using System.Text;
+using System.Text.Json;
 
 namespace RoutingApp.Worker.Functions
 {
@@ -12,14 +13,19 @@ namespace RoutingApp.Worker.Functions
     {
         private readonly IRouteRepository _routeRepository;
         private readonly ILogger<RouteJobProcessor> _logger;
+		private readonly ServiceBusClient _serviceBusClient;
 
-        public RouteJobProcessor(IRouteRepository routeRepository, ILogger<RouteJobProcessor> logger)
-        {
-            _routeRepository = routeRepository;
-            _logger = logger;
-        }
+		public RouteJobProcessor(
+		   IRouteRepository routeRepository,
+		   ILogger<RouteJobProcessor> logger,
+		   ServiceBusClient serviceBusClient)
+		{
+			_routeRepository = routeRepository;
+			_logger = logger;
+			_serviceBusClient = serviceBusClient;
+		}
 
-        [Function("RouteJobProcessor")]
+		[Function("RouteJobProcessor")]
         public async Task Run(
             [ServiceBusTrigger("%ServiceBus:QueueName%", Connection = "ServiceBus:ConnectionString")]
             ServiceBusReceivedMessage message)
@@ -71,6 +77,31 @@ namespace RoutingApp.Worker.Functions
 			}
 
             _logger.LogInformation($"Route {job.RouteId} updated to Completed");
-        }
+
+			var reply = new RouteJobMessage
+			{
+				RouteId = job.RouteId,
+				CorrelationId = job.CorrelationId,
+				RequestedBy = "processor",
+				Timestamp = DateTime.UtcNow,
+				ReplyTo = job.ReplyTo
+			};
+
+			var replySender = _serviceBusClient.CreateSender(job.ReplyTo);
+			var replyMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(reply)))
+			{
+				CorrelationId = job.CorrelationId
+			};
+
+			try
+			{
+				await replySender.SendMessageAsync(replyMessage);
+				_logger.LogInformation($"Reply sent to {job.ReplyTo} with correlation {job.CorrelationId}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Failed to send reply for route job {job.RouteId}");
+			}
+		}
     }
 }

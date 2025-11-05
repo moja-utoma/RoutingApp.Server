@@ -1,16 +1,17 @@
 ﻿using Azure.Core;
+using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
-using RoutingApp.Data.Entities;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.API.Models.ThirdParty;
-using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.API.Services.Interfaces;
+using RoutingApp.Data.Entities;
+using RoutingApp.Data.Repositories.Interfaces;
+using RoutingApp.Shared.Messaging;
 using System.Net.Http;
 using System.Text.Json;
 using Route = RoutingApp.Data.Entities.Route;
-using RoutingApp.Shared.Messaging;
 
 namespace RoutingApp.API.Services
 {
@@ -147,14 +148,21 @@ namespace RoutingApp.API.Services
             {
                 RouteId = id,
                 CorrelationId = route.CorrelationId,
-                Timestamp = DateTime.UtcNow
-            };
+                Timestamp = DateTime.UtcNow,
+				ReplyTo = "reply-route-jobs"
+			};
 
             // Enqueue message
             await _queueService.PublishRouteJobAsync(jobMessage);
 
-            return EntityToModel.CreateModelForDetailsFromRoute(route);
-        }
+			var reply = await _queueService.WaitForReplyAsync("reply-route-jobs", route.CorrelationId, TimeSpan.FromMinutes(5));
+
+			if (reply == null)
+				throw new TimeoutException("No reply received for route calculation.");
+
+			var updatedRoute = await _routeRepository.GetByIdAsync(id);
+			return EntityToModel.CreateModelForDetailsFromRoute(updatedRoute);
+		}
 
 
         //public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
