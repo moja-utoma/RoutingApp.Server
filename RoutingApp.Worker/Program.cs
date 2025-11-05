@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,10 @@ var host = new HostBuilder()
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(sqlConnection));
 
-        services.AddScoped<IRouteRepository, RouteRepository>();
+		var connectionString = context.Configuration["ServiceBus:ConnectionString"];
+		services.AddSingleton(new ServiceBusClient(connectionString));
+
+		services.AddScoped<IRouteRepository, RouteRepository>();
     })
     .ConfigureFunctionsWorkerDefaults()
     .Build();
