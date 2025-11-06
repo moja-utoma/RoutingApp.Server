@@ -15,6 +15,7 @@ using RoutingApp.Data.Entities;
 using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.Data.Repositories;
 using RoutingApp.Data.Seed;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,7 +118,12 @@ builder.Services.AddScoped<IQueuePublisherService, QueuePublisherService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddHostedService<RouteReplyListener>();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+	ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
+builder.Services.AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 

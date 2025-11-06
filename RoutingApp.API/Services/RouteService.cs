@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
+using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using RoutingApp.API.Mappers;
 using RoutingApp.API.Models.DTO;
@@ -10,154 +11,167 @@ using RoutingApp.Data.Entities;
 using RoutingApp.Data.Repositories;
 using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.Shared.Messaging;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using Route = RoutingApp.Data.Entities.Route;
 
 namespace RoutingApp.API.Services
 {
-    public class RouteService : IRouteService
-    {
-        private readonly IRouteRepository _routeRepository;
-        private readonly IPointRepository<DeliveryPoint> _deliveryPointRepository;
-        private readonly IPointRepository<Warehouse> _warehouseRepository;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IQueuePublisherService _queueService;
+	public class RouteService : IRouteService
+	{
+		private readonly IRouteRepository _routeRepository;
+		private readonly IPointRepository<DeliveryPoint> _deliveryPointRepository;
+		private readonly IPointRepository<Warehouse> _warehouseRepository;
+		private readonly IHttpClientFactory _httpClientFactory;
+		private readonly IQueuePublisherService _queueService;
 		private readonly ICalculatedRouteRepository _calcRepository;
+		private readonly TelemetryClient _telemetry;
+
 
 		public RouteService(IRouteRepository routeRepository,
-        IPointRepository<DeliveryPoint> deliveryPointRepository,
-        IPointRepository<Warehouse> warehouseRepository, 
-        IHttpClientFactory httpClientFactory, 
-        IQueuePublisherService queueService,
-		ICalculatedRouteRepository calcRepository)
-        {
-            _routeRepository = routeRepository;
-            _deliveryPointRepository = deliveryPointRepository;
-            _warehouseRepository = warehouseRepository;
-            _httpClientFactory = httpClientFactory;
-            _queueService = queueService;
-            _calcRepository = calcRepository;
-        }
+		IPointRepository<DeliveryPoint> deliveryPointRepository,
+		IPointRepository<Warehouse> warehouseRepository,
+		IHttpClientFactory httpClientFactory,
+		IQueuePublisherService queueService,
+		ICalculatedRouteRepository calcRepository,
+		TelemetryClient telemetry)
+		{
+			_routeRepository = routeRepository;
+			_deliveryPointRepository = deliveryPointRepository;
+			_warehouseRepository = warehouseRepository;
+			_httpClientFactory = httpClientFactory;
+			_queueService = queueService;
+			_calcRepository = calcRepository;
+			_telemetry = telemetry;
+		}
 
-        public async Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request)
-        {
-            var warehouses = await _warehouseRepository.GetMultipleByIdAsync(request.WarehouseIds);
-            if (!warehouses.Any())
-            {
-                throw new Exception("At least one warehouse is required");
-            }
+		public async Task<RouteResponseDTO> CreateRouteAsync(CreateRouteRequestDTO request)
+		{
+			var warehouses = await _warehouseRepository.GetMultipleByIdAsync(request.WarehouseIds);
+			if (!warehouses.Any())
+			{
+				throw new Exception("At least one warehouse is required");
+			}
 
-            var points = await _deliveryPointRepository.GetMultipleByIdAsync(request.DeliveryPointIds);
-            if (!warehouses.Any() || !points.Any())
-            {
-                throw new Exception("No valid delivery points found for given IDs");
-            }
+			var points = await _deliveryPointRepository.GetMultipleByIdAsync(request.DeliveryPointIds);
+			if (!warehouses.Any() || !points.Any())
+			{
+				throw new Exception("No valid delivery points found for given IDs");
+			}
 
-            var entity = ModelToEntity.CreateEntityFromRoute(request, points, warehouses);
+			var entity = ModelToEntity.CreateEntityFromRoute(request, points, warehouses);
 
-            var result = await _routeRepository.AddAsync(entity);
-            await _routeRepository.SaveChangesAsync();
+			var result = await _routeRepository.AddAsync(entity);
+			await _routeRepository.SaveChangesAsync();
 
-            var dto = EntityToModel.CreateModelFromRoute(result);
-            return dto;
-        }
+			_telemetry.TrackEvent("RouteCreated", new Dictionary<string, string>
+			{
+				{ "RouteId", result.Id.ToString() },
+				{ "Name", result.Name },
+				{ "WarehouseCount", warehouses.Count().ToString() },
+				{ "DeliveryPointCount", points.Count().ToString() }
+			});
 
-        public async Task<IEnumerable<RouteResponseDTO>> GetAllRoutesAsync()
-        {
-            var result = await _routeRepository.GetAll().ToListAsync();
-            return EntityToModel.CreateModelsFromRoutes(result);
-        }
+			var dto = EntityToModel.CreateModelFromRoute(result);
+			return dto;
+		}
 
-        public async Task<RouteDetailsResponseDTO?> GetRouteByIDAsync(int id)
-        {
-            var result = await _routeRepository.GetByIdAsync(id);
-            if (result == null)
-            {
-                throw new Exception("Not found");
-            }
+		public async Task<IEnumerable<RouteResponseDTO>> GetAllRoutesAsync()
+		{
+			var result = await _routeRepository.GetAll().ToListAsync();
+			return EntityToModel.CreateModelsFromRoutes(result);
+		}
 
-            var calcR = await _routeRepository.GetLatestCalculatedRoute(result.Id);
+		public async Task<RouteDetailsResponseDTO?> GetRouteByIDAsync(int id)
+		{
+			var result = await _routeRepository.GetByIdAsync(id);
+			if (result == null)
+			{
+				throw new Exception("Not found");
+			}
 
-            return EntityToModel.CreateModelForDetailsFromRoute(result, calcR);
-        }
+			var calcR = await _routeRepository.GetLatestCalculatedRoute(result.Id);
 
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await _routeRepository.GetByIdAsync(id);
-            if (entity == null)
-            {
-                throw new Exception("No route with such ID found");
-            }
+			return EntityToModel.CreateModelForDetailsFromRoute(result, calcR);
+		}
 
-            //deletes relationship with points
-            //if (entity.DeliveryPoints != null && entity.DeliveryPoints.Any())
-            //{
-            //    entity.DeliveryPoints = new List<DeliveryPoint>();
-            //}
+		public async Task DeleteAsync(int id)
+		{
+			var entity = await _routeRepository.GetByIdAsync(id);
+			if (entity == null)
+			{
+				throw new Exception("No route with such ID found");
+			}
 
-            //if (entity.Warehouses != null && entity.Warehouses.Any())
-            //{
-            //    entity.Warehouses = new List<Warehouse>();
-            //}
+			//deletes relationship with points
+			//if (entity.DeliveryPoints != null && entity.DeliveryPoints.Any())
+			//{
+			//    entity.DeliveryPoints = new List<DeliveryPoint>();
+			//}
 
-            _routeRepository.Delete(entity);
-            await _routeRepository.SaveChangesAsync();
-        }
+			//if (entity.Warehouses != null && entity.Warehouses.Any())
+			//{
+			//    entity.Warehouses = new List<Warehouse>();
+			//}
 
-        public async Task<RouteResponseDTO> EditAsync(EditRouteRequestDTO request)
-        {
-            var entity = await _routeRepository.GetByIdAsync(request.Id);
-            if (entity == null)
-            {
-                throw new Exception("No route with such ID found");
-            }
+			_routeRepository.Delete(entity);
+			await _routeRepository.SaveChangesAsync();
+		}
 
-            entity.Name = request.Name;
+		public async Task<RouteResponseDTO> EditAsync(EditRouteRequestDTO request)
+		{
+			var entity = await _routeRepository.GetByIdAsync(request.Id);
+			if (entity == null)
+			{
+				throw new Exception("No route with such ID found");
+			}
 
-            var warehouses = await _warehouseRepository.GetMultipleByIdAsync(request.WarehouseIds);
-            if (warehouses.Count() != request.WarehouseIds.Count())
-            {
-                throw new Exception("Some warehouses are invalid");
-            }
+			entity.Name = request.Name;
 
-            var deliveryPoints = await _deliveryPointRepository.GetMultipleByIdAsync(request.DeliveryPointIds);
-            if (deliveryPoints.Count() != request.DeliveryPointIds.Count())
-            {
-                throw new Exception("Some delivery points are invalid");
-            }
+			var warehouses = await _warehouseRepository.GetMultipleByIdAsync(request.WarehouseIds);
+			if (warehouses.Count() != request.WarehouseIds.Count())
+			{
+				throw new Exception("Some warehouses are invalid");
+			}
 
-            entity.Warehouses = warehouses;
-            entity.DeliveryPoints = deliveryPoints;
+			var deliveryPoints = await _deliveryPointRepository.GetMultipleByIdAsync(request.DeliveryPointIds);
+			if (deliveryPoints.Count() != request.DeliveryPointIds.Count())
+			{
+				throw new Exception("Some delivery points are invalid");
+			}
 
-            await _routeRepository.SaveChangesAsync();
-            return EntityToModel.CreateModelFromRoute(entity);
-        }
+			entity.Warehouses = warehouses;
+			entity.DeliveryPoints = deliveryPoints;
 
-        public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
-        {
-            var route = await _routeRepository.GetByIdAsync(id);
-            if (route == null)
-                throw new Exception("Route not found");
+			await _routeRepository.SaveChangesAsync();
+			return EntityToModel.CreateModelFromRoute(entity);
+		}
 
-            // Set job state
-            route.Status = "Pending";
-            route.UpdatedAt = DateTime.UtcNow;
-            route.CorrelationId = Guid.NewGuid().ToString();
+		public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
+		{
+			var route = await _routeRepository.GetByIdAsync(id);
+			if (route == null)
+				throw new Exception("Route not found");
 
-            await _routeRepository.SaveChangesAsync();
+			// Set job state
+			route.Status = "Pending";
+			route.UpdatedAt = DateTime.UtcNow;
+			route.CorrelationId = Guid.NewGuid().ToString();
 
-            // Create queue message
-            var jobMessage = new RouteJobMessage
-            {
-                RouteId = id,
-                CorrelationId = route.CorrelationId,
-                Timestamp = DateTime.UtcNow,
+			await _routeRepository.SaveChangesAsync();
+
+			// Create queue message
+			var jobMessage = new RouteJobMessage
+			{
+				RouteId = id,
+				CorrelationId = route.CorrelationId,
+				Timestamp = DateTime.UtcNow,
 				ReplyTo = "reply-route-jobs"
 			};
 
-            // Enqueue message
-            await _queueService.PublishRouteJobAsync(jobMessage);
+			// Enqueue message
+			await _queueService.PublishRouteJobAsync(jobMessage);
 
 			var reply = await _queueService.WaitForReplyAsync("reply-route-jobs", route.CorrelationId, TimeSpan.FromMinutes(5));
 
@@ -174,8 +188,8 @@ namespace RoutingApp.API.Services
 			};
 		}
 
-        public async Task<string> EnqueueRouteCalculationAsync(int id)
-        {
+		public async Task<string> EnqueueRouteCalculationAsync(int id)
+		{
 			var route = await _routeRepository.GetByIdAsync(id);
 			if (route == null)
 				throw new Exception("Route not found");
@@ -194,20 +208,25 @@ namespace RoutingApp.API.Services
 				ReplyTo = "reply-route-jobs"
 			};
 
+			var startTime = DateTime.UtcNow;
+			var timer = Stopwatch.StartNew();
+
 			await _queueService.PublishRouteJobAsync(jobMessage);
+
+			_telemetry.TrackDependency("AzureServiceBus", "PublishRouteJob", $"RouteId={id}", startTime, timer.Elapsed, true);
 
 			return route.CorrelationId;
 		}
 
-        public async Task<CalculatedRouteDto?> GetCalculatedRouteByCorrelationIdAsync(string id)
-        {
-            var route = await _routeRepository.GetByCorrelationIdAsync(id);
+		public async Task<CalculatedRouteDto?> GetCalculatedRouteByCorrelationIdAsync(string id)
+		{
+			var route = await _routeRepository.GetByCorrelationIdAsync(id);
 			if (route == null || route.CalculatedRoutes == null)
 			{
 				throw new Exception("Route not found");
 			}
 
-            var calculatedRoute = route.CalculatedRoutes.OrderByDescending(x=>x.CreatedAt).FirstOrDefault();
+			var calculatedRoute = route.CalculatedRoutes.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
 
 			return new CalculatedRouteDto
 			{

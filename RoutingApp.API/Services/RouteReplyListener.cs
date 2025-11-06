@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.SignalR;
 using RoutingApp.API.Models.Responses.Routes;
 using RoutingApp.Data.Repositories;
@@ -14,12 +15,14 @@ namespace RoutingApp.API.Services
 		private readonly IHubContext<RouteHub> _hubContext;
 		private readonly IConfiguration _configuration;
 		private readonly ILogger<RouteReplyListener> _logger;
+		private readonly TelemetryClient _telemetry;
 
 		public RouteReplyListener(
 		IServiceProvider provider,
 		IHubContext<RouteHub> hubContext,
 		IConfiguration configuration,
-		ILogger<RouteReplyListener> logger)
+		ILogger<RouteReplyListener> logger,
+		TelemetryClient telemetry)
 		{
 			_provider = provider;
 			_hubContext = hubContext;
@@ -69,6 +72,13 @@ namespace RoutingApp.API.Services
 						var body = message.Body.ToArray();
 						var reply = JsonSerializer.Deserialize<RouteJobMessage>(body);
 
+						_telemetry.TrackEvent("ServiceBusMessageReceived", new Dictionary<string, string>
+						{
+							{ "CorrelationId", message.CorrelationId ?? "null" },
+							{ "MessageId", message.MessageId },
+							{ "RouteId", reply?.RouteId.ToString() ?? "unknown" }
+						});
+
 						if (reply == null || string.IsNullOrWhiteSpace(reply.CorrelationId))
 						{
 							_logger.LogWarning("Invalid reply message");
@@ -114,6 +124,11 @@ namespace RoutingApp.API.Services
 					catch (Exception ex)
 					{
 						_logger.LogError(ex, "Error in message loop");
+						_telemetry.TrackException(ex, new Dictionary<string, string>
+						{
+							{ "Context", "RouteReplyListener" },
+							{ "Phase", "MessageLoop" }
+						});
 						await Task.Delay(1000, stoppingToken);
 					}
 				}
@@ -121,6 +136,11 @@ namespace RoutingApp.API.Services
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "FATAL ERROR in RouteReplyListener - service stopped!");
+				_telemetry.TrackException(ex, new Dictionary<string, string>
+				{
+					{ "Context", "RouteReplyListener" },
+					{ "Phase", "MessageLoop" }
+				});
 			}
 			finally
 			{
