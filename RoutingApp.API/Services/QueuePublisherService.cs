@@ -1,5 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using RoutingApp.Shared.Messaging;
+using System.Text;
 using System.Text.Json;
 
 namespace RoutingApp.API.Services
@@ -8,7 +9,7 @@ namespace RoutingApp.API.Services
     {
         Task PublishRouteJobAsync(RouteJobMessage message);
 		Task<RouteJobMessage?> WaitForReplyAsync(string replyQueue, string correlationId, TimeSpan timeout);
-
+		Task<RouteJobMessage?> ReadReplyAsync(string replyQueue);
 	}
     public class QueuePublisherService:IQueuePublisherService
     {
@@ -30,9 +31,10 @@ namespace RoutingApp.API.Services
                 CorrelationId = message.CorrelationId,
                 ContentType = "application/json"
             };
-
-            await sender.SendMessageAsync(sbMessage);
-        }
+			Console.WriteLine($"Publishing job to {_queueName} with CorrelationId: {message.CorrelationId}");
+			await sender.SendMessageAsync(sbMessage);
+			Console.WriteLine("Message published successfully");
+		}
 		public async Task<RouteJobMessage?> WaitForReplyAsync(string replyQueue, string correlationId, TimeSpan timeout)
 		{
 			var receiver = _client.CreateReceiver(replyQueue, new ServiceBusReceiverOptions
@@ -65,7 +67,7 @@ namespace RoutingApp.API.Services
 			}
 			catch (TaskCanceledException)
 			{
-				return null; // Timeout
+				return null;
 			}
 
 			if (replyMessage == null)
@@ -75,5 +77,38 @@ namespace RoutingApp.API.Services
 			return JsonSerializer.Deserialize<RouteJobMessage>(body);
 		}
 
+		public async Task<RouteJobMessage?> ReadReplyAsync(string replyQueue)
+		{
+			Console.WriteLine($"Attempting to read from queue: {replyQueue}");
+			var receiver = _client.CreateReceiver(replyQueue, new ServiceBusReceiverOptions
+			{
+				ReceiveMode = ServiceBusReceiveMode.PeekLock
+			});
+
+			var message = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5));
+			if (message == null)
+			{
+				Console.WriteLine($"No message received from queue '{replyQueue}'.");
+				return null;
+			}
+
+			Console.WriteLine($"Raw message body: {Encoding.UTF8.GetString(message.Body)}");
+			Console.WriteLine($"CorrelationId: {message.CorrelationId}");
+
+			var body = message.Body.ToArray();
+			var reply = JsonSerializer.Deserialize<RouteJobMessage>(body);
+
+			if (reply == null)
+			{
+				Console.WriteLine("Deserialization failed.");
+			}
+			else
+			{
+				Console.WriteLine($"Deserialized reply: RouteId={reply.RouteId}, CorrelationId={reply.CorrelationId}");
+			}
+
+			await receiver.CompleteMessageAsync(message);
+			return reply;
+		}
 	}
 }

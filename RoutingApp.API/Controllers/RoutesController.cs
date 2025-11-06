@@ -1,11 +1,14 @@
-﻿using FluentValidation;
+﻿using Azure.Messaging.ServiceBus;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
+using RoutingApp.Shared.Messaging;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace RoutingApp.API.Controllers
@@ -104,9 +107,8 @@ namespace RoutingApp.API.Controllers
 		{
 			try
 			{
-				var res = await _routeService.CalculateRouteAsync(id);
-
-                return Ok(res);
+				var res = await _routeService.EnqueueRouteCalculationAsync(id); //CalculateRouteAsync
+				return Ok(new { CorrelationId = res });
 			}
 			catch (Exception e)
 			{
@@ -114,5 +116,29 @@ namespace RoutingApp.API.Controllers
 				return BadRequest(e.Message);
 			}
 		}
-    }
+
+		//[HttpPost("TestSendReply")]
+		//public async Task<IActionResult> TestSendReply()
+		//{
+		//	var testMessage = new RouteJobMessage
+		//	{
+		//		RouteId = 1,
+		//		CorrelationId = Guid.NewGuid().ToString(),
+		//		RequestedBy = "test",
+		//		Timestamp = DateTime.UtcNow,
+		//		ReplyTo = "reply-route-jobs"
+		//	};
+
+		//	var sender = _serviceBusClient.CreateSender("reply-route-jobs");
+		//	var body = JsonSerializer.Serialize(testMessage);
+		//	var message = new ServiceBusMessage(body)
+		//	{
+		//		CorrelationId = testMessage.CorrelationId
+		//	};
+
+		//	await sender.SendMessageAsync(message);
+
+		//	return Ok(new { message = "Test message sent", correlationId = testMessage.CorrelationId });
+		//}
+	}
 }

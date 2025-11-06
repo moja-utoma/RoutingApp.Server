@@ -114,6 +114,11 @@ builder.Services.AddSingleton<ServiceBusClient>(sp =>
 
 builder.Services.AddScoped<IQueuePublisherService, QueuePublisherService>();
 
+builder.Services.AddSignalR();
+
+builder.Services.AddHostedService<RouteReplyListener>();
+
+
 var app = builder.Build();
 
 app.UseCors("AllowAngular");
@@ -155,5 +160,7 @@ using (var scope = app.Services.CreateScope())
 	RouteSeeder.Seed(context);
 	KyivCompactRouteSeeder.Seed(context);
 }
+
+app.MapHub<RouteHub>("/routeHub");
 
 app.Run();

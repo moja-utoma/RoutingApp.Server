@@ -174,79 +174,104 @@ namespace RoutingApp.API.Services
 			};
 		}
 
+        public async Task<string> EnqueueRouteCalculationAsync(int id)
+        {
+			var route = await _routeRepository.GetByIdAsync(id);
+			if (route == null)
+				throw new Exception("Route not found");
 
-        //public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
-        //{
-        //    var route = await _routeRepository.GetByIdAsync(id);
-        //    if (route == null)
-        //        throw new Exception("Not found");
+			route.Status = "Pending";
+			route.UpdatedAt = DateTime.UtcNow;
+			route.CorrelationId = Guid.NewGuid().ToString();
 
-        //    var vehicles = route.Warehouses
-        //        .Where(w => w.Vehicles != null)
-        //        .SelectMany(w => w.Vehicles)
-        //        .Select(v => new VehicleForCalculationDTO
-        //        {
-        //            Id = v.Id,
-        //            Name = v.Name,
-        //            Capacity = v.Capacity,
-        //            Warehouse = v.Warehouse.Id
-        //        })
-        //        .ToList();
+			await _routeRepository.SaveChangesAsync();
+
+			var jobMessage = new RouteJobMessage
+			{
+				RouteId = id,
+				CorrelationId = route.CorrelationId,
+				Timestamp = DateTime.UtcNow,
+				ReplyTo = "reply-route-jobs"
+			};
+
+			await _queueService.PublishRouteJobAsync(jobMessage);
+
+			return route.CorrelationId;
+		}
 
 
-        //    var exportDto = new RouteCalculationRequest
-        //    {
-        //        Id = route.Id,
-        //        Warehouses = route.Warehouses.Select(w => new WarehouseForCalculationDTO
-        //        {
-        //            Id = w.Id,
-        //            Name = w.Name,
-        //            Latitude = w.Latitude,
-        //            Longitude = w.Longitude
-        //        }).ToList(),
-        //        Vehicles = vehicles,
-        //        Points = route.DeliveryPoints.Select(p => new DeliveryPointForCalculationDTO
-        //        {
-        //            Id = p.Id,
-        //            Name = p.Name,
-        //            Weight = p.Weight,
-        //            Latitude = p.Latitude,
-        //            Longitude = p.Longitude
-        //        }).ToList()
-        //    };
+		//public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
+		//{
+		//    var route = await _routeRepository.GetByIdAsync(id);
+		//    if (route == null)
+		//        throw new Exception("Not found");
 
-        //    var httpClient = _httpClientFactory.CreateClient();
-        //    var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", exportDto);
-        //    //var jspnstring = await response.Content.ReadAsStringAsync();
+		//    var vehicles = route.Warehouses
+		//        .Where(w => w.Vehicles != null)
+		//        .SelectMany(w => w.Vehicles)
+		//        .Select(v => new VehicleForCalculationDTO
+		//        {
+		//            Id = v.Id,
+		//            Name = v.Name,
+		//            Capacity = v.Capacity,
+		//            Warehouse = v.Warehouse.Id
+		//        })
+		//        .ToList();
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var jsonString = await response.Content.ReadAsStringAsync();
 
-        //        route.Status = "Active";
-        //        route.UpdatedAt = DateTime.UtcNow;
-        //        route.CorrelationId = Guid.NewGuid().ToString();
+		//    var exportDto = new RouteCalculationRequest
+		//    {
+		//        Id = route.Id,
+		//        Warehouses = route.Warehouses.Select(w => new WarehouseForCalculationDTO
+		//        {
+		//            Id = w.Id,
+		//            Name = w.Name,
+		//            Latitude = w.Latitude,
+		//            Longitude = w.Longitude
+		//        }).ToList(),
+		//        Vehicles = vehicles,
+		//        Points = route.DeliveryPoints.Select(p => new DeliveryPointForCalculationDTO
+		//        {
+		//            Id = p.Id,
+		//            Name = p.Name,
+		//            Weight = p.Weight,
+		//            Latitude = p.Latitude,
+		//            Longitude = p.Longitude
+		//        }).ToList()
+		//    };
 
-        //        // Save `id` and `jsonString` to DB
-        //        var result = await _routeRepository.SaveCalculatedRoute(id, jsonString);
-        //        await _routeRepository.SaveChangesAsync();
-        //        return result;
-        //    }
-        //    else
-        //    {
-        //        // Handle error
-        //        throw new Exception("error");
-        //    }
+		//    var httpClient = _httpClientFactory.CreateClient();
+		//    var response = await httpClient.PostAsJsonAsync("http://127.0.0.1:5000/api/build-route", exportDto);
+		//    //var jspnstring = await response.Content.ReadAsStringAsync();
 
-        //    //if (response.IsSuccessStatusCode)
-        //    //{
-        //    //	var jsonString = await response.Content.ReadAsStringAsync();
-        //    //	var result = JsonSerializer.Deserialize<RouteCalculationResponse>(jsonString, new JsonSerializerOptions
-        //    //	{
-        //    //		PropertyNameCaseInsensitive = true
-        //    //	});
-        //    //}
+		//    if (response.IsSuccessStatusCode)
+		//    {
+		//        var jsonString = await response.Content.ReadAsStringAsync();
 
-        //}
-    }
+		//        route.Status = "Active";
+		//        route.UpdatedAt = DateTime.UtcNow;
+		//        route.CorrelationId = Guid.NewGuid().ToString();
+
+		//        // Save `id` and `jsonString` to DB
+		//        var result = await _routeRepository.SaveCalculatedRoute(id, jsonString);
+		//        await _routeRepository.SaveChangesAsync();
+		//        return result;
+		//    }
+		//    else
+		//    {
+		//        // Handle error
+		//        throw new Exception("error");
+		//    }
+
+		//    //if (response.IsSuccessStatusCode)
+		//    //{
+		//    //	var jsonString = await response.Content.ReadAsStringAsync();
+		//    //	var result = JsonSerializer.Deserialize<RouteCalculationResponse>(jsonString, new JsonSerializerOptions
+		//    //	{
+		//    //		PropertyNameCaseInsensitive = true
+		//    //	});
+		//    //}
+
+		//}
+	}
 }
