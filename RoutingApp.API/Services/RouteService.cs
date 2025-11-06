@@ -199,6 +199,25 @@ namespace RoutingApp.API.Services
 			return route.CorrelationId;
 		}
 
+        public async Task<CalculatedRouteDto?> GetCalculatedRouteByCorrelationIdAsync(string id)
+        {
+            var route = await _routeRepository.GetByCorrelationIdAsync(id);
+			if (route == null || route.CalculatedRoutes == null)
+			{
+				throw new Exception("Route not found");
+			}
+
+            var calculatedRoute = route.CalculatedRoutes.OrderByDescending(x=>x.CreatedAt).FirstOrDefault();
+
+			return new CalculatedRouteDto
+			{
+				Id = calculatedRoute.Id,
+				RouteId = calculatedRoute.Route.Id,
+				Calculation = calculatedRoute.Calculation,
+				CreatedAt = calculatedRoute.CreatedAt
+			};
+		}
+
 
 		//public async Task<CalculatedRouteDto> CalculateRouteAsync(int id)
 		//{

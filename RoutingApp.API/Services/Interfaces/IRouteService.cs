@@ -13,6 +13,6 @@ namespace RoutingApp.API.Services.Interfaces
         Task<CalculatedRouteDto> CalculateRouteAsync(int id);
         //Task<RouteDetailsResponseDTO> CalculateRouteAsync(int id);
 		Task<string> EnqueueRouteCalculationAsync(int id);
-
+		Task<CalculatedRouteDto?> GetCalculatedRouteByCorrelationIdAsync(string id);
 	}
 }

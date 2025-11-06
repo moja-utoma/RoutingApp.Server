@@ -117,6 +117,21 @@ namespace RoutingApp.API.Controllers
 			}
 		}
 
+		[HttpGet("Result/{correlationId}")]
+		public async Task<IActionResult> GetRouteResult(string correlationId)
+		{
+			try
+			{
+				var res = await _routeService.GetCalculatedRouteByCorrelationIdAsync(correlationId); //CalculateRouteAsync
+				return Ok(new { CorrelationId = res });
+			}
+			catch (Exception e)
+			{
+
+				return BadRequest(e.Message);
+			}
+		}
+
 		//[HttpPost("TestSendReply")]
 		//public async Task<IActionResult> TestSendReply()
 		//{
