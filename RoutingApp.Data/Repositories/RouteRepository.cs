@@ -64,11 +64,22 @@ namespace RoutingApp.Data.Repositories
 
         }
 
-        // public async Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids)
-        // {
-        // 	return await _dbSet.Include(r => r.Points)
-        // 		.Where(r => ids.Contains(r.Id))
-        // 		.ToListAsync();
-        // }
-    }
+        public async Task<Route?> GetByCorrelationIdAsync(string id)
+        {
+            return await _context.Set<Route>()
+            .Include(r => r.Warehouses)
+            .Include(r => r.DeliveryPoints)
+            .Include(r => r.CalculatedRoutes)
+            .Where(r => r.CorrelationId == id)
+            .FirstOrDefaultAsync();
+
+		}
+
+		// public async Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids)
+		// {
+		// 	return await _dbSet.Include(r => r.Points)
+		// 		.Where(r => ids.Contains(r.Id))
+		// 		.ToListAsync();
+		// }
+	}
 }

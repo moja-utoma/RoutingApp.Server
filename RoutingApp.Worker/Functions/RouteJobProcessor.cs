@@ -69,38 +69,38 @@ namespace RoutingApp.Worker.Functions
 			try
 			{
 				await _routeRepository.SaveChangesAsync();
+
+				_logger.LogInformation($"Route {job.RouteId} updated to Completed");
+
+				var reply = new RouteJobMessage
+				{
+					RouteId = job.RouteId,
+					CorrelationId = job.CorrelationId,
+					RequestedBy = "processor",
+					Timestamp = DateTime.UtcNow,
+					ReplyTo = job.ReplyTo
+				};
+
+				var replySender = _serviceBusClient.CreateSender(job.ReplyTo);
+				var replyMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(reply)))
+				{
+					CorrelationId = job.CorrelationId
+				};
+
+				try
+				{
+					await replySender.SendMessageAsync(replyMessage);
+					_logger.LogInformation($"Reply sent to {job.ReplyTo} with correlation {job.CorrelationId}");
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, $"Failed to send reply for route job {job.RouteId}");
+				}
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"Unhandled exception while processing route job {job?.RouteId}");
-				//throw; 
-			}
-
-            _logger.LogInformation($"Route {job.RouteId} updated to Completed");
-
-			var reply = new RouteJobMessage
-			{
-				RouteId = job.RouteId,
-				CorrelationId = job.CorrelationId,
-				RequestedBy = "processor",
-				Timestamp = DateTime.UtcNow,
-				ReplyTo = job.ReplyTo
-			};
-
-			var replySender = _serviceBusClient.CreateSender(job.ReplyTo);
-			var replyMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(reply)))
-			{
-				CorrelationId = job.CorrelationId
-			};
-
-			try
-			{
-				await replySender.SendMessageAsync(replyMessage);
-				_logger.LogInformation($"Reply sent to {job.ReplyTo} with correlation {job.CorrelationId}");
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, $"Failed to send reply for route job {job.RouteId}");
+				throw; 
 			}
 		}
     }

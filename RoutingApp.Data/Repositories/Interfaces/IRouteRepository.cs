@@ -12,6 +12,7 @@ namespace RoutingApp.Data.Repositories.Interfaces
 		//Task<IEnumerable<Route>> GetMultipleByIdWithPointsAsync(IEnumerable<int> ids);
 		Task<CalculatedRouteDto> SaveCalculatedRoute(int id, string route);
 		Task<CalculatedRoute?> GetLatestCalculatedRoute(int routeId);
+		Task<Route?> GetByCorrelationIdAsync(string id);
 
-    }
+	}
 }
