@@ -1,3 +1,6 @@
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
+using Azure.Security.KeyVault.Secrets;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,17 +10,30 @@ using RoutingApp.API.Models.DTO;
 using RoutingApp.API.Services;
 using RoutingApp.API.Services.Interfaces;
 using RoutingApp.API.Validation;
-using Azure.Messaging.ServiceBus;
-using Route = RoutingApp.Data.Entities.Route;
 using RoutingApp.Data;
-using RoutingApp.Data.Interceptors;
 using RoutingApp.Data.Entities;
-using RoutingApp.Data.Repositories.Interfaces;
+using RoutingApp.Data.Interceptors;
 using RoutingApp.Data.Repositories;
+using RoutingApp.Data.Repositories.Interfaces;
 using RoutingApp.Data.Seed;
-using Azure.Identity;
+using Route = RoutingApp.Data.Entities.Route;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var keyVaultUrl = builder.Configuration["AzureKeyVault:VaultUri"];
+
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+	var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+
+	// Retrieve and load secrets into IConfiguration
+	var secrets = client.GetPropertiesOfSecrets();
+	foreach (var secret in secrets)
+	{
+		var secretValue = client.GetSecret(secret.Name);
+		builder.Configuration[secret.Name] = secretValue.Value.Value;
+	}
+}
 
 // Add services to the container.
 
@@ -35,7 +51,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddDbContext<AppDbContext>(options =>
 	options
 		.UseSqlServer(
-			builder.Configuration.GetConnectionString("RoutingDB"),
+			builder.Configuration["RoutingDB"],
 			sql => sql.MigrationsAssembly("RoutingApp.Data")
 		)
 		.AddInterceptors(new SoftDeleteInterceptor())
@@ -54,13 +70,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //    });
 
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.FallbackPolicy = options.DefaultPolicy;
-//});
+builder.Services.AddAuthorization(options =>
+{
+	options.FallbackPolicy = options.DefaultPolicy;
+});
 
 
 //DeliveryPoint
