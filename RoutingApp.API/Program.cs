@@ -26,12 +26,24 @@ if (!string.IsNullOrEmpty(keyVaultUrl))
 {
 	var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
 
-	// Retrieve and load secrets into IConfiguration
-	var secrets = client.GetPropertiesOfSecrets();
-	foreach (var secret in secrets)
+	try
 	{
-		var secretValue = client.GetSecret(secret.Name);
-		builder.Configuration[secret.Name] = secretValue.Value.Value;
+		await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
+		{
+			try
+			{
+				var secret = await client.GetSecretAsync(secretProperties.Name);
+				builder.Configuration[secretProperties.Name] = secret.Value.Value;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Failed to retrieve secret '{secretProperties.Name}': {ex.Message}");
+			}
+		}
+	}
+	catch (Exception ex)
+	{
+		Console.WriteLine($"Key Vault access failed: {ex.Message}");
 	}
 }
 
