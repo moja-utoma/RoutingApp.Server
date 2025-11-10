@@ -24,27 +24,27 @@ var keyVaultUrl = builder.Configuration["AzureKeyVault:VaultUri"];
 
 if (!string.IsNullOrEmpty(keyVaultUrl))
 {
-	var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+    var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
 
-	try
-	{
-		await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
-		{
-			try
-			{
-				var secret = await client.GetSecretAsync(secretProperties.Name);
-				builder.Configuration[secretProperties.Name] = secret.Value.Value;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Failed to retrieve secret '{secretProperties.Name}': {ex.Message}");
-			}
-		}
-	}
-	catch (Exception ex)
-	{
-		Console.WriteLine($"Key Vault access failed: {ex.Message}");
-	}
+    try
+    {
+        await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
+        {
+            try
+            {
+                var secret = await client.GetSecretAsync(secretProperties.Name);
+                builder.Configuration[secretProperties.Name] = secret.Value.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to retrieve secret '{secretProperties.Name}': {ex.Message}");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Key Vault access failed: {ex.Message}");
+    }
 }
 
 // Add services to the container.
