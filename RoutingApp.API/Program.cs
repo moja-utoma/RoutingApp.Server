@@ -70,20 +70,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.Authority = builder.Configuration.GetValue<string>("auth0:Authority");
-//        options.Audience = builder.Configuration.GetValue<string>("auth0:Audience");
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            NameClaimType = "name"
-//        };
-//    });
-
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration.GetValue<string>("auth0:Authority");
+        options.Audience = builder.Configuration.GetValue<string>("auth0:Audience");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = "name"
+        };
+    });
+
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//	.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 builder.Services.AddAuthorization(options =>
 {
