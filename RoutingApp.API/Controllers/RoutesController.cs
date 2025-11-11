@@ -123,7 +123,7 @@ namespace RoutingApp.API.Controllers
 			try
 			{
 				var res = await _routeService.GetCalculatedRouteByCorrelationIdAsync(correlationId); //CalculateRouteAsync
-				return Ok(new { CorrelationId = res });
+				return Ok(res);
 			}
 			catch (Exception e)
 			{

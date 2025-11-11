@@ -28,6 +28,7 @@ namespace RoutingApp.API.Services
 			_hubContext = hubContext;
 			_configuration = configuration;
 			_logger = logger;
+			_telemetry = telemetry;
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
