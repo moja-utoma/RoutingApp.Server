@@ -1,0 +1,59 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include:
+      - master
+      - dev
+  paths:
+    include:
+      - RoutingApp.Data/**
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  DOTNET_VERSION: '8.0.x'
+  MIGRATION_SCRIPT_NAME: 'migration.sql'
+  DATA_PROJECT_PATH: 'RoutingApp.Data'
+  API_PROJECT_PATH: 'RoutingApp.API'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '$(DOTNET_VERSION)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build solution'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration Release'
+
+- script: |
+    dotnet tool install --global dotnet-ef
+    echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+  displayName: 'Install EF Core CLI'
+
+- script: |
+    dotnet ef migrations script \
+      --project $(DATA_PROJECT_PATH) \
+      --startup-project $(API_PROJECT_PATH) \
+      --idempotent \
+      -o $(Build.ArtifactStagingDirectory)/$(MIGRATION_SCRIPT_NAME)
+  displayName: 'Generate SQL migration script'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'ef-migrations'
