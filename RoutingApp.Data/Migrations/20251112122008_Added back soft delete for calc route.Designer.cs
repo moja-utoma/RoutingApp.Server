@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoutingApp.Data;
 
@@ -11,9 +12,11 @@ using RoutingApp.Data;
 namespace RoutingApp.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDdContextModelSnapshot : ModelSnapshot
+    [Migration("20251112122008_Added back soft delete for calc route")]
+    partial class Addedbacksoftdeleteforcalcroute
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
