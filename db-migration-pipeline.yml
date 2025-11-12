@@ -40,12 +40,11 @@ steps:
     projects: '**/*.csproj'
     arguments: '--configuration Release'
 
-- script: |
-    dotnet tool install --global dotnet-ef
-    echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-  displayName: 'Install EF Core CLI'
+- script: dotnet tool restore
+  displayName: 'Restore EF Core CLI from manifest'
 
 - script: |
+    export PATH="$PATH:$HOME/.dotnet/tools"
     dotnet ef migrations script \
       --project $(DATA_PROJECT_PATH) \
       --startup-project $(API_PROJECT_PATH) \
