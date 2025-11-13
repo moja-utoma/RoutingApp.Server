@@ -3,6 +3,7 @@ using Azure.AI.OpenAI;
 using Azure.AI.OpenAI.Chat;
 using OpenAI.Assistants;
 using OpenAI.Chat;
+using RoutingApp.API.Controllers;
 using System.ClientModel;
 using System.Text;
 
@@ -12,6 +13,8 @@ namespace RoutingApp.API.Services
 	{
 		Task<string> ProcessMessageAsync(string userMessage);
 		void ClearHistory();
+		IReadOnlyList<ChatMessage> GetHistory();
+		List<MessageDto> GetFormattedHistory();
 	}
 	public class AzureAIResponseService : IAzureAIResponseService
 	{
@@ -85,5 +88,32 @@ and always assume the user wants to understand how—not to have the assistant d
 		}
 
 		public IReadOnlyList<ChatMessage> GetHistory() => _messageHistory.AsReadOnly();
+
+		public List<MessageDto> GetFormattedHistory()
+		{
+			return _messageHistory.Select(m => new MessageDto
+			{
+				Role = GetRoleString(m),
+				Content = GetContentString(m)
+			}).ToList();
+		}
+
+		private string GetRoleString(ChatMessage message)
+		{
+			if (message is SystemChatMessage) return "system";
+			if (message is UserChatMessage) return "user";
+			if (message is AssistantChatMessage) return "assistant";
+			return "unknown";
+		}
+
+		private string GetContentString(ChatMessage message)
+		{
+			if (message.Content is IEnumerable<ChatMessageContentPart> parts)
+			{
+				var textPart = parts.FirstOrDefault();
+				return textPart?.Text ?? string.Empty;
+			}
+			return message.Content?.ToString() ?? string.Empty;
+		}
 	}
 }

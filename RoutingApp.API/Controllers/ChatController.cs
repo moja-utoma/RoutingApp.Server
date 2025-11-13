@@ -37,6 +37,19 @@ namespace RoutingApp.API.Controllers
 			_chatService.ClearHistory();
 			return Ok(new { message = "Chat history cleared" });
 		}
+
+		[HttpGet("history")]
+		public IActionResult GetHistory()
+		{
+			var history = _chatService.GetFormattedHistory();
+
+			return Ok(new { history });
+		}
+	}
+	public class MessageDto
+	{
+		public string Role { get; set; }
+		public string Content { get; set; }
 	}
 	public class ChatRequest
 	{
