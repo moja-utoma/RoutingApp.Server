@@ -5,16 +5,17 @@ using OpenAI.Assistants;
 using OpenAI.Chat;
 using RoutingApp.API.Controllers;
 using System.ClientModel;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace RoutingApp.API.Services
 {
 	public interface IAzureAIResponseService
 	{
-		Task<string> ProcessMessageAsync(string userMessage);
-		void ClearHistory();
-		IReadOnlyList<ChatMessage> GetHistory();
-		List<MessageDto> GetFormattedHistory();
+		Task<ChatResponse> ProcessMessageAsync(ChatRequest request);
+		void ClearHistory(string conversationId);
+		IReadOnlyList<ChatMessage> GetHistory(string conversationId);
+		List<MessageDto> GetFormattedHistory(string conversationId);
 	}
 	public class AzureAIResponseService : IAzureAIResponseService
 	{
@@ -22,7 +23,8 @@ namespace RoutingApp.API.Services
 		private readonly AzureOpenAIClient _azureClient;
 		private readonly ChatClient _chatClient;
 		private readonly IConfiguration _config;
-		private readonly List<ChatMessage> _messageHistory = new();
+		private readonly IHttpContextAccessor _httpContextAccessor;
+		private readonly ConcurrentDictionary<string, List<ChatMessage>> _conversationHistories = new();
 		private readonly string _systemPrompt = @"You are a helpful assistant for a logistics platform. 
 Your role is to guide users through using the site, including navigating pages, creating entities, and starting simulations. 
 You do not perform actions yourself—your job is to explain how users can do these tasks on their own.
@@ -40,13 +42,19 @@ and always assume the user wants to understand how—not to have the assistant d
 			var key = new AzureKeyCredential(_config["AzureOpenAI:Key"]);
 			_azureClient = new AzureOpenAIClient(endpoint, key);
 			_chatClient = _azureClient.GetChatClient(_config["AzureOpenAI:DeploymentName"]);
-
-			_messageHistory.Add(ChatMessage.CreateSystemMessage(_systemPrompt));
 		}
 
-		public async Task<string> ProcessMessageAsync(string userMessage)
+		public async Task<ChatResponse> ProcessMessageAsync(ChatRequest request)
 		{
-			_messageHistory.Add(ChatMessage.CreateUserMessage(userMessage));
+			var conversationId = string.IsNullOrWhiteSpace(request.ConversationId)
+		? Guid.NewGuid().ToString()
+		: request.ConversationId;
+
+			var history = _conversationHistories.GetOrAdd(conversationId, _ => new List<ChatMessage> {
+		ChatMessage.CreateSystemMessage(_systemPrompt)
+	});
+
+			history.Add(ChatMessage.CreateUserMessage(request.Message));
 
 			var chatOptions = new ChatCompletionOptions();
 
@@ -65,33 +73,41 @@ and always assume the user wants to understand how—not to have the assistant d
 				});
 			}
 
-			ClientResult<ChatCompletion> response = await _chatClient.CompleteChatAsync(
-				_messageHistory,
-				chatOptions
-			);
-
-			var completion = response.Value;
-			var assistantMessage = completion.Content[0].Text;
+			var response = await _chatClient.CompleteChatAsync(history, chatOptions);
+			var assistantMessage = response.Value.Content[0].Text;
 
 			if (!string.IsNullOrEmpty(assistantMessage))
 			{
-				_messageHistory.Add(ChatMessage.CreateAssistantMessage(assistantMessage));
+				history.Add(ChatMessage.CreateAssistantMessage(assistantMessage));
 			}
 
-			return assistantMessage ?? "No response generated";
+			return new ChatResponse
+			{
+				Message = assistantMessage ?? "No response generated",
+				Timestamp = DateTime.UtcNow,
+				ConversationId = conversationId
+			};
 		}
 
-		public void ClearHistory()
+		public void ClearHistory(string conversationId)
 		{
-			_messageHistory.Clear();
-			_messageHistory.Add(ChatMessage.CreateSystemMessage(_systemPrompt));
+			_conversationHistories[conversationId] = new List<ChatMessage>
+			{
+				ChatMessage.CreateSystemMessage(_systemPrompt)
+			};
 		}
 
-		public IReadOnlyList<ChatMessage> GetHistory() => _messageHistory.AsReadOnly();
-
-		public List<MessageDto> GetFormattedHistory()
+		public IReadOnlyList<ChatMessage> GetHistory(string conversationId)
 		{
-			return _messageHistory.Select(m => new MessageDto
+			return _conversationHistories.TryGetValue(conversationId, out var history)
+				? history.AsReadOnly()
+				: new List<ChatMessage> { ChatMessage.CreateSystemMessage(_systemPrompt) }.AsReadOnly();
+		}
+
+		public List<MessageDto> GetFormattedHistory(string conversationId)
+		{
+			var history = GetHistory(conversationId);
+			return history.Select(m => new MessageDto
 			{
 				Role = GetRoleString(m),
 				Content = GetContentString(m)
@@ -100,10 +116,13 @@ and always assume the user wants to understand how—not to have the assistant d
 
 		private string GetRoleString(ChatMessage message)
 		{
-			if (message is SystemChatMessage) return "system";
-			if (message is UserChatMessage) return "user";
-			if (message is AssistantChatMessage) return "assistant";
-			return "unknown";
+			return message switch
+			{
+				SystemChatMessage => "system",
+				UserChatMessage => "user",
+				AssistantChatMessage => "assistant",
+				_ => "unknown"
+			};
 		}
 
 		private string GetContentString(ChatMessage message)
@@ -115,5 +134,6 @@ and always assume the user wants to understand how—not to have the assistant d
 			}
 			return message.Content?.ToString() ?? string.Empty;
 		}
+
 	}
 }

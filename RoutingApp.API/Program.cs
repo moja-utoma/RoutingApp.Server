@@ -152,8 +152,9 @@ builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsigh
 });
 
 builder.Services.AddApplicationInsightsTelemetry();
-builder.Services.AddSingleton<IAzureAIResponseService, AzureAIResponseService>();
 
+builder.Services.AddScoped<IAzureAIResponseService, AzureAIResponseService>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

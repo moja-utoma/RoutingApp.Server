@@ -22,26 +22,22 @@ namespace RoutingApp.API.Controllers
 				return BadRequest(new { error = "Message cannot be empty" });
 			}
 
-			var response = await _chatService.ProcessMessageAsync(request.Message);
+			var response = await _chatService.ProcessMessageAsync(request);
 
-			return Ok(new ChatResponse
-			{
-				Message = response,
-				Timestamp = DateTime.UtcNow
-			});
+			return Ok(response);
 		}
 
 		[HttpPost("clear")]
-		public IActionResult ClearHistory()
+		public IActionResult ClearHistory(string conversationId)
 		{
-			_chatService.ClearHistory();
+			_chatService.ClearHistory(conversationId);
 			return Ok(new { message = "Chat history cleared" });
 		}
 
 		[HttpGet("history")]
-		public IActionResult GetHistory()
+		public IActionResult GetHistory(string conversationId)
 		{
-			var history = _chatService.GetFormattedHistory();
+			var history = _chatService.GetFormattedHistory(conversationId);
 
 			return Ok(new { history });
 		}
@@ -53,11 +49,13 @@ namespace RoutingApp.API.Controllers
 	}
 	public class ChatRequest
 	{
+		public string ConversationId { get; set; }
 		public string Message { get; set; }
 	}
 
 	public class ChatResponse
 	{
+		public string ConversationId { get; set; }
 		public string Message { get; set; }
 		public DateTime Timestamp { get; set; }
 	}
